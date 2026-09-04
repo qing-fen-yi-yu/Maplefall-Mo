@@ -1,21 +1,23 @@
 server:
   port: 10000
+
 spring:
+  jmx:
+    enabled: false          # 禁用 JMX，解决冲突
   profiles:
     active: dev
   application:
-    name: gateway-service
+    name: GatewayApplication  # 建议与 Nacos 中的服务名一致
+  config:
+    import:
+      - nacos:sharding-spring.yaml
+      - nacos:sharding-redis.yaml
+      - nacos:sharding-logs.yaml
   cloud:
     nacos:
       config:
+        server-addr: 192.168.150.104:8848
         file-extension: yaml
-        shared-configs: # 共享配置
-          - data-id: shared-spring.yaml # 共享spring配置
-            refresh: false
-          - data-id: shared-redis.yaml # 共享redis配置
-            refresh: false
-          - data-id: shared-logs.yaml # 共享日志配置
-            refresh: false
     gateway:
       routes:
         - id: ms
@@ -24,18 +26,12 @@ spring:
             - Path=/ms/**
       default-filters:
         - StripPrefix=1
-      globalcors: # 全局的跨域处理
-        add-to-simple-url-handler-mapping: true # 解决options请求被拦截问题
+      globalcors:
+        add-to-simple-url-handler-mapping: true
         corsConfigurations:
           '[/**]':
-            allowedOriginPatterns: # 允许哪些网站的跨域请求
-              - "*"
-            allowedMethods: # 允许的跨域ajax的请求方式
-              - "GET"
-              - "POST"
-              - "DELETE"
-              - "PUT"
-              - "OPTIONS"
-            allowedHeaders: "*" # 允许在请求中携带的头信息
-            allowCredentials: true # 是否允许携带cookie
-            maxAge: 360000 # 这次跨域检测的有效期
+            allowedOriginPatterns: "*"
+            allowedMethods: "GET,POST,DELETE,PUT,OPTIONS"
+            allowedHeaders: "*"
+            allowCredentials: true
+            maxAge: 360000

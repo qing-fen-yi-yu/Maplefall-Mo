@@ -1,9 +1,0 @@
-spring:
-  cloud:
-    nacos:
-      config:
-        server-addr: 192.168.150.104:8848 # Nacos服务器地址[reference:9]
-        namespace: d287a4e1-225a-4254-bd10-947bc27f15de
-        group: DEFAULT_GROUP # 可选，配置分组，默认为DEFAULT_GROUP[reference:12]
-        file-extension: yaml # 配置文件格式，支持yaml/properties等[reference:13][reference:14]
-#        refresh-enabled: true
