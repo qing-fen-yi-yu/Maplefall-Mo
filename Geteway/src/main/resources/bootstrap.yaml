@@ -1,23 +1,26 @@
 server:
   port: 10000
-
 spring:
-  jmx:
-    enabled: false          # 禁用 JMX，解决冲突
+  application:
+    name: GatewayApplication
   profiles:
     active: dev
-  application:
-    name: GatewayApplication  # 建议与 Nacos 中的服务名一致
-  config:
-    import:
-      - nacos:sharding-spring.yaml
-      - nacos:sharding-redis.yaml
-      - nacos:sharding-logs.yaml
   cloud:
     nacos:
       config:
         server-addr: 192.168.150.104:8848
+        namespace: d287a4e1-225a-4254-bd10-947bc27f15de  # 共享配置所在命名空间 Fengluo
         file-extension: yaml
+        shared-configs: # 共享配置
+          - data-id: sharding-spring.yaml # 共享spring配置
+            group: DEFAULT_GROUP
+            refresh: false
+          - data-id: sharding-redis.yaml # 共享redis配置
+            group: DEFAULT_GROUP
+            refresh: false
+          - data-id: sharding-logs.yaml # 共享日志配置
+            group: DEFAULT_GROUP
+            refresh: false
     gateway:
       routes:
         - id: ms
