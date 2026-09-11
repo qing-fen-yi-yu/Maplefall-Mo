@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>auth-service</artifactId>
+    <artifactId>Fengluo-Auth-Server</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -18,14 +18,18 @@
     </properties>
     <dependencies>
         <dependency>
-            <groupId>com.fengluo</groupId>
-            <artifactId>Fengluo-Common</artifactId>
-            <version>1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
+        <dependency>
+            <groupId>com.fengluo</groupId>
+            <artifactId>auth-service</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

@@ -25,12 +25,15 @@
         <module>Fengluo-User</module>
         <module>Fengluo-Notice</module>
         <module>Fengluo-Task</module>
+        <module>Fengluo-Search</module>
+        <module>Fengluo-Search</module>
     </modules>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <elasticsearch.version>7.12.1</elasticsearch.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <spring-cloud-alibaba.version>2023.0.1.0</spring-cloud-alibaba.version>
         <mybatis-plus.version>3.5.16</mybatis-plus.version>
@@ -84,34 +87,32 @@
                 <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
                 <version>2.3.0</version>
             </dependency>
+<!--            redisson-->
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson-spring-boot-starter</artifactId>
                 <version>${redisson.version}</version>
             </dependency>
+<!--            aop-->
             <dependency>
                 <groupId>org.aspectj</groupId>
                 <artifactId>aspectjweaver</artifactId>
                 <version>${aspectj.version}</version>
             </dependency>
+<!--            caffine-->
             <dependency>
                 <groupId>com.github.ben-manes.caffeine</groupId>
                 <artifactId>caffeine</artifactId>
                 <version>${project.caffine.version}</version>
             </dependency>
-
-            <!--        druid-->
-            <dependency>
-                <groupId>com.alibaba</groupId>
-                <artifactId>druid-spring-boot-starter</artifactId>
-                <version>${druid.version}</version>
-            </dependency>
+<!--            hutool-->
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
                 <version>5.8.38</version>
                 <type>pom</type>
             </dependency>
+            
         </dependencies>
     </dependencyManagement>
     <dependencies>
@@ -131,6 +132,11 @@
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+<!--        json处理-->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
         </dependency>
     </dependencies>
     <build>

@@ -1,0 +1,62 @@
+server:
+  port: 10010
+  servlet:
+    session:
+      timeout: 30m
+      cookie:
+        max-age: 24h
+  tomcat:
+    uri-encoding: UTF-8   #服务编码
+spring:
+  application:
+    name: UserApplication
+  cloud:
+    nacos:
+      config:
+        server-addr: 192.168.150.104:8848
+        namespace: d287a4e1-225a-4254-bd10-947bc27f15de  # 共享配置所在命名空间 Fengluo
+        file-extension: yaml
+        shared-configs: # 共享配置
+          - data-id: sharding-spring.yaml # 共享spring配置
+            refresh: false
+          - data-id: sharding-redis.yaml # 共享redis配置
+            refresh: false
+          - data-id: sharding-logs.yaml # 共享日志配置
+            refresh: false
+          - data-id: sharding-mysql.yaml
+            refresh: false
+          - data-id: sharding-mq.yaml
+            refresh: false
+          - data-id: sharding-feign.yaml
+            refresh: false
+  profiles:
+    active: dev
+fl:
+  redis:
+    host: 192.168.150.104   # Redis地址
+    password: ''            # 若无密码则留空
+    pool:
+      max-active: 8
+      max-idle: 8
+      min-idle: 1
+      max-wait: 300
+  mysql:
+    host: 192.168.150.104
+    port: 3306               # 默认端口，可不写
+    database: user
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver   # 推荐用新版驱动
+  mq:
+    host: localhost
+    port: 5672
+    vhost: /maplefall        # 根据你的元数据补充
+    username: guilu
+    password: 123
+  auth:
+    resource:
+      enable: true
+      exclude-login-paths:
+        - "user/account/login"
+        - "admin/account/login"
+

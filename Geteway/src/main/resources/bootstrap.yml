@@ -23,12 +23,13 @@ spring:
             refresh: false
     gateway:
       routes:
-        - id: ms
-          uri: lb://media-service
+      #user服务过滤器配置
+        - id: user
+          uri: lb://user-service
           predicates:
-            - Path=/ms/**
+            - Path=/user/**
       default-filters:
-        - StripPrefix=1
+        - StripPrefix=1 #省略路径中的第一个参数
       globalcors:
         add-to-simple-url-handler-mapping: true
         corsConfigurations:

@@ -1,0 +1,24 @@
+spring:
+  cloud:
+    nacos:
+      server-addr: 192.168.150.104:8848 # nacos注册中心
+      discovery:
+        namespace: d287a4e1-225a-4254-bd10-947bc27f15de #命名空间
+        group: DEFAULT_GROUP #组别
+  elasticsearch:
+    uris: 192.168.150.104:9200  # Elasticsearch 地址
+    connection-timeout: 5000ms
+    socket-timeout: 60000ms
+  data:
+    elasticsearch:
+      repositories:
+        enabled: true
+logging:
+  level:
+    org.springframework.data.elasticsearch.client.WIRE: trace  # 查看请求日志
+# 自定义配置
+elasticsearch:
+  index:
+    product: products
+    user: users
+  enable-ssl: false  # 是否启用SSL
