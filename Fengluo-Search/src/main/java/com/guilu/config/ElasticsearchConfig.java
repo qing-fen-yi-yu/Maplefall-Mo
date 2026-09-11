@@ -60,7 +60,7 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
                         HttpHost.create(elasticsearchUris))
                 .setHttpClientConfigCallback(httpClientBuilder -> {
                     // 如果配置了用户名密码，添加认证
-                    if (username != null && !username.isEmpty()) {
+                    if (!username.isEmpty() && !password.isEmpty()) {
                         CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
                         credentialsProvider.setCredentials(
                                 AuthScope.ANY,
