@@ -48,7 +48,6 @@ public class ElasticsearchConfig extends ElasticsearchConfiguration {
                 .withSocketTimeout(60000)
                 .build();
     }
-
     /**
      * 配置 ElasticsearchClient Bean
      * 用于高级操作
