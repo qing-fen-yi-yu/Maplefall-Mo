@@ -19,14 +19,13 @@
         <module>FengLuo-Api</module>
         <module>Fengluo-Monitor/Fengluo-Monitor-SDK</module>
         <module>Fengluo-Monitor/Fengluo-Request-Service</module>
-        <module>Fengluo-Monitor/Fengluo-JVM-Service</module>
         <module>Fengluo-Monitor/Fengluo-Sys-Service</module>
         <module>Fengluo-Auth</module>
         <module>Fengluo-User</module>
         <module>Fengluo-Notice</module>
         <module>Fengluo-Task</module>
         <module>Fengluo-Search</module>
-        <module>Fengluo-Search</module>
+        <module>Fengluo-Observability-Starter</module>
     </modules>
 
     <properties>
@@ -44,7 +43,7 @@
         <org.projectlombok.version>1.18.34</org.projectlombok.version>
         <project.caffine.version>3.2.3</project.caffine.version>
         <druid.version>1.2.27</druid.version>
-        <hutool.version>5.8.38</hutool.version>
+        <hutool.version>5.8.46</hutool.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -109,10 +108,8 @@
             <dependency>
                 <groupId>cn.hutool</groupId>
                 <artifactId>hutool-all</artifactId>
-                <version>5.8.38</version>
-                <type>pom</type>
+                <version>${hutool.version}</version>
             </dependency>
-            
         </dependencies>
     </dependencyManagement>
     <dependencies>

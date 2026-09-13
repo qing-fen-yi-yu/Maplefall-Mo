@@ -1,18 +1,31 @@
 package com.guilu.ExceptionHandler;
 
+import com.guilu.constants.Constant;
+import com.guilu.domain.Result;
+import com.guilu.exception.BusinessException.CommonException;
+import com.guilu.exception.BusinessException.UnLoginException;
+import com.guilu.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
+import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.core.Ordered;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
+
+import static com.guilu.constants.ResultInfo.Code.FAILED;
+import static com.guilu.constants.ResultInfo.Msg.SERVER_INTER_ERROR;
 
 /**
- * todo网关异常处理器
+ * 网关异常处理器
  */
 @Slf4j
 @Component
@@ -27,7 +40,39 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
             // 如果已经提交，直接结束，避免重复处理
             return Mono.error(ex);
         }
-        return null;
+        // 3.按照异常类型进行翻译处理，翻译的结果易于前端理解
+        String message;
+        int code = FAILED;
+        if (ex instanceof UnLoginException) {
+            // 登录异常，直接返回状态码
+            UnLoginException e = (UnLoginException) ex;
+            return Mono.error(new ResponseStatusException(e.getCode(), e.getMessage(), e));
+        } else if (ex instanceof CommonException) {
+            CommonException e = (CommonException) ex;
+            code = e.getCode();
+            message = e.getMessage();
+        } else if (ex instanceof NotFoundException) {
+            message = "服务不存在";
+        } else if (ex instanceof ResponseStatusException) {
+            message = ex.getMessage();
+        } else {
+            message = SERVER_INTER_ERROR;
+            // 4.记录日志
+            writeLog(exchange, ex);
+        }
+        // 5.设置响应结果为 JSON
+        response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
+        // 6.封装响应结果并写出
+        Result<Object> r = Result.error(code, message);
+        List<String> requestIds = response.getHeaders().get(Constant.REQUEST_ID_HEADER);
+        if (requestIds != null) {
+            r.setRequestId(requestIds.get(0));
+        }
+        byte[] resp = JsonUtils.toJsonStr(r).getBytes(StandardCharsets.UTF_8);
+        return response.writeWith(
+                Mono.fromSupplier(
+                        () -> response.bufferFactory().wrap(resp)
+                ));
     }
 
     private void writeLog(ServerWebExchange exchange, Throwable ex) {
@@ -38,7 +83,6 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
         log.error("网关路由异常-host:{} ,port:{}，uri:{},  errormessage:",
                 host, port, request.getPath(), ex);
     }
-
     @Override
     public int getOrder() {
         return HIGHEST_PRECEDENCE;

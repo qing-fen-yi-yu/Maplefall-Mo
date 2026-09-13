@@ -39,3 +39,8 @@ spring:
             allowedHeaders: "*"
             allowCredentials: true
             maxAge: 360000
+monitor:
+  exception: true
+  jvm:
+    extras:
+      enabled: false

@@ -9,7 +9,7 @@ import reactor.core.publisher.Mono;
 
 @Component
 public class AccountAuthFilter implements GlobalFilter, Ordered {
-    //todo
+    //todo 用户权限校验拦截
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         return null;

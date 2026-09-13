@@ -1,0 +1,3 @@
+#配置加载类
+com.guilu.config.GlobalExceptionAutoConfiguration
+com.guilu.config.JvmExtrasAutoConfiguration

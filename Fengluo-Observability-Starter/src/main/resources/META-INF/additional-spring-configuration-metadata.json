@@ -1,0 +1,19 @@
+{
+  "groups": [{
+    "name": "motitor"
+  }],
+  "properties": [{
+    "name": "monitor.exception",
+    "type": "java.lang.Boolean",
+    "description": "是否启用异常监控"
+  },{
+    "name": "monitor.jvm.extras.enabled",
+    "type": "java.lang.Boolean",
+    "description": "jvm扩展监控功能"
+  },{
+    "name": "monitor.jvm.basic",
+    "type": "java.lang.Boolean",
+    "description": "jvm基础监控信息"
+  }
+  ]
+}
