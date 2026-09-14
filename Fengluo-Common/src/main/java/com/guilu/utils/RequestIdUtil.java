@@ -3,7 +3,7 @@ package com.guilu.utils;
 import cn.hutool.core.lang.UUID;
 import org.slf4j.MDC;
 
-import static com.tianji.common.constants.Constant.REQUEST_ID_HEADER;
+import static com.guilu.constants.Constant.REQUEST_ID_HEADER;
 
 
 public class RequestIdUtil {

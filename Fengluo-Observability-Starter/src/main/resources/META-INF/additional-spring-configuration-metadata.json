@@ -5,15 +5,23 @@
   "properties": [{
     "name": "monitor.exception",
     "type": "java.lang.Boolean",
-    "description": "是否启用异常监控"
+    "description": "是否启用异常监控",
+    "defaultValue": false
   },{
     "name": "monitor.jvm.extras.enabled",
     "type": "java.lang.Boolean",
-    "description": "jvm扩展监控功能"
+    "description": "jvm扩展监控功能",
+    "defaultValue": false
   },{
     "name": "monitor.jvm.basic",
     "type": "java.lang.Boolean",
-    "description": "jvm基础监控信息"
+    "description": "jvm基础监控信息",
+    "defaultValue": false
+  },{
+    "name": "monitor.threadpool.dynamic.enabled",
+    "type": "java.lang.Boolean",
+    "description": "动态线程池监控功能",
+    "defaultValue": false
   }
   ]
 }

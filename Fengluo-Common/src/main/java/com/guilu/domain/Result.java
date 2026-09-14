@@ -5,6 +5,8 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Data;
 
+import static com.guilu.constants.ResultInfo.Code.SUCCESS;
+
 @Data
 @ApiModel(description = "通用响应结果")
 public class Result<T> {
@@ -18,10 +20,10 @@ public class Result<T> {
     private String requestId;
 
     public static <T> Result<T> success() {
-        return new Result<>(ResultInfo.Code.SUCCESS);
+        return new Result<>(SUCCESS);
     }
     public static <T> Result<T> success(T data) {
-        return new Result<>(ResultInfo.Code.SUCCESS,data);
+        return new Result<>(SUCCESS,data);
     }
     public static <T> Result<T> success(Integer code, T data) {
         return new Result<>(code,data);
@@ -64,5 +66,9 @@ public class Result<T> {
 
     public void requestId(String requestId) {
         this.requestId = requestId;
+    }
+
+    public boolean isLoginStatus() {
+        return code == SUCCESS;
     }
 }

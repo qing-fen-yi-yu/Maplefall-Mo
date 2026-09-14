@@ -1,8 +1,8 @@
 package com.guilu.utils;
 
-import com.tianji.common.exceptions.BadRequestException;
+import com.guilu.exception.RequestException.BadRequestException;
+import jakarta.validation.ConstraintViolation;
 
-import javax.validation.ConstraintViolation;
 import java.util.Set;
 import java.util.stream.Collectors;
 

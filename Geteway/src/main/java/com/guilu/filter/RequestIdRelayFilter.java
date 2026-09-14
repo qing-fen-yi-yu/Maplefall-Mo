@@ -13,6 +13,9 @@ import java.util.UUID;
 
 import static com.guilu.constants.Constant.*;
 
+/***
+ * 网关层请求id头转发过滤器
+ */
 @Slf4j
 @Component
 public class RequestIdRelayFilter implements GlobalFilter, Ordered {
@@ -33,10 +36,8 @@ public class RequestIdRelayFilter implements GlobalFilter, Ordered {
                     }
                 }
         ).build();
-
         return chain.filter(exchange);
     }
-
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;

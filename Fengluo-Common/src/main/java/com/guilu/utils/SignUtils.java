@@ -8,7 +8,7 @@ package com.guilu.utils;
  **/
 
 import cn.hutool.core.util.HexUtil;
-import com.tianji.common.exceptions.CommonException;
+import com.guilu.exception.BusinessException.CommonException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.util.UriUtils;
 

@@ -1,0 +1,10 @@
+monitor:
+  threadpool:
+    dynamic:
+      enabled: true
+encrypt:
+  key-store:
+    alias: tutorialspedia  #别名
+    location: classpath:MapleFall.jks  #KeyStore 证书库名称
+    password: maplefall123456   #证书库密码
+    secret: maplefall123456   #秘钥

@@ -2,11 +2,16 @@
   "groups": [
     {
       "name": "tj.auth.resource",
-      "type": "com.guilu.config.ResourceInterceptorConfiguration",
       "sourceType": "com.guilu.config.ResourceAuthProperties"
     }
   ],
   "properties": [
+    {
+      "name": "tj.auth.resource.applicationName",
+      "type": "java.lang.String",
+      "description": "应用名称，用于在登录时判断是否是当前应用的登录请求",
+      "sourceType": "com.guilu.config.ResourceAuthProperties"
+    },
     {
       "name": "tj.auth.resource.enable",
       "type": "java.lang.Boolean",

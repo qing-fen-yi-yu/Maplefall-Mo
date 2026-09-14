@@ -1,8 +1,8 @@
 package com.guilu.utils;
 
 
-import com.tianji.common.constants.ErrorInfo;
-import com.tianji.common.exceptions.BadRequestException;
+import com.guilu.constants.ResultInfo;
+import com.guilu.exception.RequestException.BadRequestException;
 
 import java.util.Map;
 
@@ -44,7 +44,7 @@ public class AssertUtils {
     }
 
     private static void handleException(String ... message){
-        String msg = ErrorInfo.Msg.REQUEST_PARAM_ILLEGAL;
+        String msg = ResultInfo.Msg.REQUEST_PARAM_ILLEGAL;
         if(message != null && message.length > 0){
             msg = message[0];
         }

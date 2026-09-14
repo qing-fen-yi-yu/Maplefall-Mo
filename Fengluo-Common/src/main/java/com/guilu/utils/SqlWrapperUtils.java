@@ -1,5 +1,6 @@
 package com.guilu.utils;
 
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
@@ -8,8 +9,6 @@ import java.lang.reflect.Field;
 
 /**
  * 将查询条件对象、修改的查询条件转换为QueryWrapper
- * 查询wrapper {@link LambdaQueryWrapper}
- * 更新wrapper {@link LambdaUpdateWrapper}
  *
  * @ClassName SqlWrapperUtils
  * @author wusongsong

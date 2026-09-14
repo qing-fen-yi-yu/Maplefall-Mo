@@ -2,7 +2,7 @@ package com.guilu.utils;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.collection.IterUtil;
-import com.tianji.common.validate.Checker;
+import com.guilu.validate.Checker;
 
 import java.util.*;
 import java.util.function.Function;
