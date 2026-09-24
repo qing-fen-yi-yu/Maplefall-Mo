@@ -29,7 +29,7 @@
         </dependency>
         <dependency>
             <groupId>com.fengluo</groupId>
-            <artifactId>Fengluo-Auth-SDK</artifactId>
+            <artifactId>auth-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <!--web-->
@@ -56,6 +56,11 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+        <!-- token 状态与权限缓存所需的 Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
     </dependencies>
 

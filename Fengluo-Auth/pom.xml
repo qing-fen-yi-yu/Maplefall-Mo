@@ -13,7 +13,6 @@
     <packaging>pom</packaging>
     <modules>
         <module>auth-service</module>
-        <module>Fengluo-Auth-SDK</module>
     </modules>
 
     <properties>

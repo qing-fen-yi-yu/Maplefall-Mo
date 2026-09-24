@@ -39,3 +39,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
+### jks密钥
+*.jks

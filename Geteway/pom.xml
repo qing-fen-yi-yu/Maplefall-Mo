@@ -42,7 +42,7 @@
         </dependency>
         <dependency>
             <groupId>com.fengluo</groupId>
-            <artifactId>Fengluo-Auth-SDK</artifactId>
+            <artifactId>auth-service</artifactId>
             <version>1.0-SNAPSHOT</version>
             <exclusions>
                 <exclusion>

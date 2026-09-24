@@ -44,3 +44,7 @@ monitor:
   jvm:
     extras:
       enabled: false
+fl:
+  auth:
+    resource:
+      enable: true

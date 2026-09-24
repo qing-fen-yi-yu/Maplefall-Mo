@@ -1,6 +1,7 @@
 package com.guilu.filter;
 
 import com.guilu.config.AuthProperties;
+import com.guilu.exception.RequestException.ForbiddenException;
 import com.guilu.util.PathUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,6 +13,8 @@ import org.springframework.util.AntPathMatcher;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
+import static com.guilu.constants.AuthErrorInfo.Msg.FORBIDDEN;
+
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties({AuthProperties.class})
@@ -21,20 +24,16 @@ public class GateWayFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        //如果是非白名单路径，直接放行
-        if (PathUtil.isPath(
-                exchange.getRequest().getPath().toString(), pathMatcher
-                , authProperties.getGatewayExcludePaths())){
-            // 直接放行
+        String path = exchange.getRequest().getPath().toString();
+        // 1.命中白名单路径，直接放行
+        if (PathUtil.isPath(path, pathMatcher, authProperties.resolveGatewayExclude())) {
             return chain.filter(exchange);
         }
-        //判断路径是否存在被拦截路径中
-        if(PathUtil.isPath(
-                exchange.getRequest().getPath().toString(), pathMatcher
-                , authProperties.getGatewayIncludePaths())){
-            // 直接放行
-            return null;
+        // 2.命中拦截路径（黑名单），禁止访问
+        if (PathUtil.isPath(path, pathMatcher, authProperties.resolveGatewayInclude())) {
+            throw new ForbiddenException(FORBIDDEN);
         }
+        // 3.其余路径放行
         return chain.filter(exchange);
     }
 
