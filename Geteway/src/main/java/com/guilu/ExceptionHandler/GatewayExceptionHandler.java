@@ -4,14 +4,11 @@ import com.guilu.constants.Constant;
 import com.guilu.domain.Result;
 import com.guilu.exception.BusinessException.CommonException;
 import com.guilu.exception.BusinessException.UnLoginException;
-import com.guilu.exception.RequestException.ForbiddenException;
-import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.cloud.gateway.support.NotFoundException;
 import org.springframework.core.Ordered;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -50,21 +47,9 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
             // 登录异常，直接返回状态码
             UnLoginException e = (UnLoginException) ex;
             return Mono.error(new ResponseStatusException(e.getCode(), e.getMessage(), e));
-        } else if (ex instanceof UnauthorizedException) {
-            // 未登录/未授权，返回401
-            UnauthorizedException e = (UnauthorizedException) ex;
-            response.setStatusCode(HttpStatus.UNAUTHORIZED);
-            code = e.getCode() == null ? HttpStatus.UNAUTHORIZED.value() : e.getCode();
-            message = e.getMessage();
-        } else if (ex instanceof ForbiddenException) {
-            // 无访问权限，返回403
-            ForbiddenException e = (ForbiddenException) ex;
-            response.setStatusCode(HttpStatus.FORBIDDEN);
-            code = HttpStatus.FORBIDDEN.value();
-            message = e.getMessage();
         } else if (ex instanceof CommonException) {
             CommonException e = (CommonException) ex;
-            code = e.getCode() == null ? FAILED : e.getCode();
+            code = e.getCode();
             message = e.getMessage();
         } else if (ex instanceof NotFoundException) {
             message = "服务不存在";

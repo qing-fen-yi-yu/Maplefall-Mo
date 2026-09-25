@@ -42,8 +42,8 @@ fl:
       max-wait: 300
   mysql:
     host: 192.168.150.104
-    port: 3306
-    database: fl_auth
+    port: 3306               # 默认端口，可不写
+    database: user
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver   # 推荐用新版驱动
@@ -58,9 +58,5 @@ fl:
       enable: true
       exclude-login-paths:
         - "user/account/login"
-        # 刷新必须免登录：access token 过期后仍要能换新
-        - "user/account/refresh"
-        # 注销免登录：access token 已过期时也要能清理 refresh token
-        - "user/account/logout"
         - "admin/account/login"
 

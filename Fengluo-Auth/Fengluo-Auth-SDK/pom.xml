@@ -5,16 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.fengluo</groupId>
-        <artifactId>FengLuo</artifactId>
+        <artifactId>Fengluo-Auth</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>Fengluo-Auth</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>auth-service</module>
-        <module>Fengluo-Auth-SDK</module>
-    </modules>
+    <artifactId>Fengluo-Auth-SDK</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -24,10 +19,15 @@
     <dependencies>
         <dependency>
             <groupId>com.fengluo</groupId>
-            <artifactId>Fengluo-Observability-starter</artifactId>
+            <artifactId>auth-service</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!--        redis依赖仅用于本模块，不参与打包-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
-
 
 </project>

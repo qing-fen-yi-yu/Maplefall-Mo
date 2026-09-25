@@ -1,32 +1,32 @@
 {
   "groups": [
     {
-      "name": "fl.auth.resource",
+      "name": "tj.auth.resource",
       "sourceType": "com.guilu.config.ResourceAuthProperties"
     }
   ],
   "properties": [
     {
-      "name": "fl.auth.resource.applicationName",
+      "name": "tj.auth.resource.applicationName",
       "type": "java.lang.String",
       "description": "应用名称，用于在登录时判断是否是当前应用的登录请求",
       "sourceType": "com.guilu.config.ResourceAuthProperties"
     },
     {
-      "name": "fl.auth.resource.enable",
+      "name": "tj.auth.resource.enable",
       "type": "java.lang.Boolean",
       "description": "是否开启登录拦截功能，如果开启则需要指定拦截路径，默认拦截所有",
       "sourceType": "com.guilu.config.ResourceAuthProperties",
       "defaultValue": false
     },
     {
-      "name": "fl.auth.resource.includeLoginPaths",
+      "name": "tj.auth.resource.includeLoginPaths",
       "type": "java.util.List",
       "description": "要拦截的路径，例如：/user/**",
       "sourceType": "com.guilu.config.ResourceAuthProperties"
     },
     {
-      "name": "fl.auth.resource.excludeLoginPaths",
+      "name": "tj.auth.resource.excludeLoginPaths",
       "type": "java.util.List",
       "description": "不拦截的路径，例如：/user/**",
       "sourceType": "com.guilu.config.ResourceAuthProperties"

@@ -20,8 +20,8 @@ public class AuthProperties {
     /** 需要拦截的路径（为空表示不启用 include 模式） */
     private Set<String> gatewayIncludePaths = new LinkedHashSet<>();
 
-    /** 是否禁用内置默认排除项（默认不禁用，即启用内置默认排除项）*/
-    private boolean disableDefaultExcludes = false;
+    /** 是否禁用内置默认排除项*/
+    private boolean disableDefaultExcludes = true;
 
     public Set<String> resolveGatewayExclude() {
         if (disableDefaultExcludes) {
