@@ -86,8 +86,16 @@ public class AccountAuthFilter implements GlobalFilter, Ordered {
         return excludes;
     }
 
+    /**
+     * 必须排在路由过滤器 StripPrefix 之前。
+     * Gateway 把路由级过滤器包成 OrderedGatewayFilter，顺序为 index+1，
+     * 即 StripPrefix=1；若本过滤器顺序大于 1，网关已把 /user 前缀剥掉，
+     * 而权限表达式（sys_menu.permission）与各业务模块上报的排除路径都带 /user 前缀，
+     * 匹配全部落空 -> findMatchPath 返回 null -> 静默放行，鉴权形同虚设。
+     * 取 HIGHEST_PRECEDENCE+100 之后、StripPrefix 之前，与 GateWayFilter 的取值保持一致。
+     */
     @Override
     public int getOrder() {
-        return 1000;
+        return HIGHEST_PRECEDENCE + 200;
     }
 }

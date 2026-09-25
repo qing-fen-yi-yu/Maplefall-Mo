@@ -95,14 +95,16 @@ public class JwtSignerHolder {
                         continue;
                     }
                     PublicKey publicKey = cert.getPublicKey();
-                    jwtSigner = JWTSignerUtil.createSigner(JwtConstants.JWT_ALGORITHM, publicKey);
                     // 私钥用于签发 token，仅持有公钥的节点无法签发（降级为只校验）
                     Key key = ks.getKey(keyStoreAlias, keyStorePassword.toCharArray());
+                    // 先写 signSigner 再写 jwtSigner：两者都是 volatile，
+                    // 这样凡是看到 jwtSigner 已就绪的线程也一定能看到 signSigner，避免签发时空指针
                     if (key instanceof PrivateKey privateKey) {
                         signSigner = JWTSignerUtil.createSigner(JwtConstants.JWT_ALGORITHM, privateKey);
                     } else {
                         log.warn("keystore 别名 {} 无可用私钥，当前节点无法签发 token", keyStoreAlias);
                     }
+                    jwtSigner = JWTSignerUtil.createSigner(JwtConstants.JWT_ALGORITHM, publicKey);
                 } catch (Exception e) {
                     log.error("获取jwk秘钥失败", e);
                     sleep(1000);
