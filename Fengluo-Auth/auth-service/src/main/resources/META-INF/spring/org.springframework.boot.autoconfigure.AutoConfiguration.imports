@@ -1,0 +1,3 @@
+com.guilu.config.ResourceAuthAutoConfiguration
+com.guilu.config.ResourceInterceptorConfiguration
+com.guilu.config.PrivilegeAutoConfiguration

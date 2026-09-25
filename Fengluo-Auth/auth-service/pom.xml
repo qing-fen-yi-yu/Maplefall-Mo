@@ -22,6 +22,30 @@
             <artifactId>Fengluo-Common</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+        <!-- 自动配置支持（@AutoConfiguration / @ConditionalOnClass） -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- 用于把登录拦截路径上报为 Nacos 实例元数据，业务模块有服务发现时生效 -->
+        <dependency>
+            <groupId>com.alibaba.cloud</groupId>
+            <artifactId>spring-cloud-starter-alibaba-nacos-discovery</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- 业务模块侧拦截器（Servlet 环境），网关为 WebFlux 不受影响 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <!-- token 状态存储所需的 Redis 客户端，由使用方提供 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
 </project>

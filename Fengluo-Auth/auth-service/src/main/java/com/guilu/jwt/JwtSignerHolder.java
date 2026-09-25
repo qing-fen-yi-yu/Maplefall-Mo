@@ -8,12 +8,15 @@ import com.guilu.utils.MarkedRunnable;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
+import java.security.Key;
 import java.security.KeyStore;
+import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -25,8 +28,18 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Component
 public class JwtSignerHolder {
+    /** 验签使用（公钥），校验 token 时使用 */
     private volatile JWTSigner jwtSigner;
+    /** 签发使用（私钥），业务模块登录签发 token 时使用 */
+    private volatile JWTSigner signSigner;
     private DiscoveryClient discoveryClient;
+
+    @Value("${encrypt.key-store.location:classpath:MapleFall.jks}")
+    private String keyStoreLocation;
+    @Value("${encrypt.key-store.alias:tutorialspedia}")
+    private String keyStoreAlias;
+    @Value("${encrypt.key-store.password:maplefall123456}")
+    private String keyStorePassword;
 
     public JwtSignerHolder(DiscoveryClient discoveryClient) {
         this.discoveryClient = discoveryClient;
@@ -71,17 +84,26 @@ public class JwtSignerHolder {
             while (jwtSigner == null) {
                 try {
                     KeyStore ks = KeyStore.getInstance("JKS");
-                    try (InputStream is = getClass().getClassLoader().getResourceAsStream("MapleFall.jks")) {
-                        ks.load(is, "maplefall123456".toCharArray());
+                    String location = keyStoreLocation.replace("classpath:", "");
+                    try (InputStream is = new ClassPathResource(location).getInputStream()) {
+                        ks.load(is, keyStorePassword.toCharArray());
                     }
-                    String alias = "tutorialspedia";  // 和 yml 保持一致，或从配置注入
-                    Certificate cert = ks.getCertificate(alias);
+                    Certificate cert = ks.getCertificate(keyStoreAlias);
                     if (cert == null) {
-                        log.error("jks 中不存在别名 {} 的证书", alias);
+                        log.error("jks 中不存在别名 {} 的证书", keyStoreAlias);
                         sleep(1000);
                         continue;
                     }
                     PublicKey publicKey = cert.getPublicKey();
+                    // 私钥用于签发 token，仅持有公钥的节点无法签发（降级为只校验）
+                    Key key = ks.getKey(keyStoreAlias, keyStorePassword.toCharArray());
+                    // 先写 signSigner 再写 jwtSigner：两者都是 volatile，
+                    // 这样凡是看到 jwtSigner 已就绪的线程也一定能看到 signSigner，避免签发时空指针
+                    if (key instanceof PrivateKey privateKey) {
+                        signSigner = JWTSignerUtil.createSigner(JwtConstants.JWT_ALGORITHM, privateKey);
+                    } else {
+                        log.warn("keystore 别名 {} 无可用私钥，当前节点无法签发 token", keyStoreAlias);
+                    }
                     jwtSigner = JWTSignerUtil.createSigner(JwtConstants.JWT_ALGORITHM, publicKey);
                 } catch (Exception e) {
                     log.error("获取jwk秘钥失败", e);

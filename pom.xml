@@ -70,6 +70,15 @@
             </dependency>
 
             <!-- mybatis plus 管理 -->
+            <!-- Spring Boot 3 必须用 spring-boot3 版本：普通 starter 会引入 mybatis-spring 2.x，
+                 Spring 6.1 把 factoryBeanObjectType 由 String 改为 Class，2.x 写入 String
+                 会导致 Mapper 注册时 BeanDefinitionStoreException -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!-- 兼容仍在引用 Boot 2 starter 的模块（Fengluo-Search），后续应一并切换 -->
             <dependency>
                 <groupId>com.baomidou</groupId>
                 <artifactId>mybatis-plus-boot-starter</artifactId>

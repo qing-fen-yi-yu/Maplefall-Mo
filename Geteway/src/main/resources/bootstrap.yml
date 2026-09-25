@@ -25,7 +25,9 @@ spring:
       routes:
       #user服务过滤器配置
         - id: user
-          uri: lb://user-service
+          # 与 Fengluo-User 的 spring.application.name (UserApplication) 保持一致，
+          # 否则 Nacos 中找不到实例，请求会落到 503 分支
+          uri: lb://UserApplication
           predicates:
             - Path=/user/**
       default-filters:
@@ -44,3 +46,7 @@ monitor:
   jvm:
     extras:
       enabled: false
+fl:
+  auth:
+    resource:
+      enable: true
