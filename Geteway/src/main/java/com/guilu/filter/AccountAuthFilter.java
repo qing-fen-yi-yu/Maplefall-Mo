@@ -38,7 +38,6 @@ public class AccountAuthFilter implements GlobalFilter, Ordered {
     private final AuthUtil authUtil;
     private final AuthMetadataResolver authMetadataResolver;
 
-    /** 网关本地配置的排除路径（归一化后） */
     private Set<String> localExcludePaths = Set.of();
 
     @PostConstruct

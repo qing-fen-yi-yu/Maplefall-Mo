@@ -30,7 +30,6 @@ import static com.guilu.constants.JwtConstants.AUTH_PRIVILEGE_VERSION_KEY;
 @Slf4j
 @Component
 public class AuthUtil {
-    /** 权限版本检查间隔，避免每次请求都访问 Redis */
     private static final long PRIVILEGE_REFRESH_INTERVAL_MILLIS = 30_000L;
 
     // 缓存权限信息
@@ -152,12 +151,18 @@ public class AuthUtil {
         }
     }
 
-    private String findMatchPath(String antPath){
+    /**
+     * 找出匹配该请求的权限路径。
+     * paths 来自 Redis HASH，遍历顺序不确定；原先「取第一个命中」会让同时命中多条规则时
+     * 生效的规则随机，可能放宽也可能收紧权限。改为「取最长的匹配模式」，
+     * 即最具体的规则优先，结果确定，也符合具体优于笼统的惯例。
+     */
+    private String findMatchPath(String antPath) {
         String matchPath = null;
         for (String pathPattern : paths) {
-            if(antPathMatcher.match(pathPattern, antPath)){
+            if (antPathMatcher.match(pathPattern, antPath)
+                    && (matchPath == null || pathPattern.length() > matchPath.length())) {
                 matchPath = pathPattern;
-                break;
             }
         }
         return matchPath;

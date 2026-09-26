@@ -36,6 +36,7 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
+        log.info("网关异常处理器");
         // 1.获取响应
         ServerHttpResponse response = exchange.getResponse();
         // 2.判断是否已处理
@@ -43,13 +44,19 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
             // 如果已经提交，直接结束，避免重复处理
             return Mono.error(ex);
         }
-        // 3.按照异常类型进行翻译处理，翻译的结果易于前端理解
+        // 3.按照异常类型进行翻译处理
         String message;
         int code = FAILED;
         if (ex instanceof UnLoginException) {
-            // 登录异常，直接返回状态码
+            // 未登录：与 UnauthorizedException 一样返回 401。
+            // 这里不能写 Mono.error(new ResponseStatusException(e.getCode(), ...))：
+            // e.getCode() 是业务码（如 40102），不是合法的 HTTP 状态码；
+            // 且在异常处理器内部再次抛错会让本处理器「处理失败」，
+            // 而它已经是最后一个 ErrorWebExceptionHandler，最终只会退化成 500。
             UnLoginException e = (UnLoginException) ex;
-            return Mono.error(new ResponseStatusException(e.getCode(), e.getMessage(), e));
+            response.setStatusCode(HttpStatus.UNAUTHORIZED);
+            code = e.getCode() == null ? HttpStatus.UNAUTHORIZED.value() : e.getCode();
+            message = e.getMessage();
         } else if (ex instanceof UnauthorizedException) {
             // 未登录/未授权，返回401
             UnauthorizedException e = (UnauthorizedException) ex;

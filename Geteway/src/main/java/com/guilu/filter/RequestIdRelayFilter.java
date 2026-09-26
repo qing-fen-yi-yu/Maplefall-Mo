@@ -36,6 +36,7 @@ public class RequestIdRelayFilter implements GlobalFilter, Ordered {
                     }
                 }
         ).build();
+        log.info("添加请求Id.......");
         return chain.filter(exchange);
     }
     @Override

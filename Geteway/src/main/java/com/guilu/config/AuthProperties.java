@@ -14,7 +14,6 @@ public class AuthProperties {
             "/error/**", "/jwks", "/*/login", "/**/admin/login", "/accounts/refresh"
     );
 
-    /** 追加的排除路径（在默认基础上叠加） */
     private Set<String> gatewayExcludePaths = new LinkedHashSet<>();
 
     /** 需要拦截的路径（为空表示不启用 include 模式） */

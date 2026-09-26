@@ -5,10 +5,14 @@ import com.guilu.domain.Result;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.RefreshTokenRequest;
 import com.guilu.domain.dto.TokenPair;
+import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.service.AccountService;
+import com.guilu.service.ISysUserOauthService;
+import com.guilu.utils.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -17,10 +21,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Slf4j
 @RestController
-@RequestMapping("/account")
+@RequestMapping("/user")
 @RequiredArgsConstructor
 public class AccountController {
-
+    private final ISysUserOauthService oauthService;
     private final AccountService accountService;
 
     @PostMapping("/login")
@@ -37,5 +41,17 @@ public class AccountController {
             @RequestHeader(value = JwtConstants.REFRESH_HEADER, required = false) String refreshToken) {
         accountService.logout(accessToken, refreshToken);
         return Result.success();
+    }
+    /**
+     * 当前登录用户
+     */
+    @GetMapping("/me")
+    public Result<Long> me() {
+        Long userId = UserContext.getUser();
+
+        if (userId == null) {
+            throw new UnauthorizedException("未登录");
+        }
+        return Result.success(userId);
     }
 }

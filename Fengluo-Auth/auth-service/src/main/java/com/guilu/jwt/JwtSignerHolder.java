@@ -10,7 +10,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -34,15 +34,23 @@ public class JwtSignerHolder {
     private volatile JWTSigner signSigner;
     private DiscoveryClient discoveryClient;
 
-    @Value("${encrypt.key-store.location:classpath:MapleFall.jks}")
+    /**
+     * 证书库位置与密码一律由外部提供，代码里不留默认值：
+     * 默认值会随源码分发，等同于把签发私钥的口令公开。
+     * 位置支持 classpath: 与 file:/绝对路径 两种写法。
+     */
+    @Value("${encrypt.key-store.location}")
     private String keyStoreLocation;
     @Value("${encrypt.key-store.alias:tutorialspedia}")
     private String keyStoreAlias;
-    @Value("${encrypt.key-store.password:maplefall123456}")
+    @Value("${encrypt.key-store.password}")
     private String keyStorePassword;
 
-    public JwtSignerHolder(DiscoveryClient discoveryClient) {
+    private final ResourceLoader resourceLoader;
+
+    public JwtSignerHolder(DiscoveryClient discoveryClient, ResourceLoader resourceLoader) {
         this.discoveryClient = discoveryClient;
+        this.resourceLoader = resourceLoader;
     }
 
     @DynamicThreadPool(name = "AuthFetchJwkThread")
@@ -84,8 +92,9 @@ public class JwtSignerHolder {
             while (jwtSigner == null) {
                 try {
                     KeyStore ks = KeyStore.getInstance("JKS");
-                    String location = keyStoreLocation.replace("classpath:", "");
-                    try (InputStream is = new ClassPathResource(location).getInputStream()) {
+                    // 用 ResourceLoader 解析，classpath: 与 file:/绝对路径 都支持；
+                    // 原先写死 ClassPathResource，外部化的 file: 路径会被当成 classpath 资源而找不到
+                    try (InputStream is = resourceLoader.getResource(keyStoreLocation).getInputStream()) {
                         ks.load(is, keyStorePassword.toCharArray());
                     }
                     Certificate cert = ks.getCertificate(keyStoreAlias);

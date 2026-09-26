@@ -61,7 +61,7 @@ public class PrivilegeService {
         }
         BoundHashOperations<String, String, String> hashOps = stringRedisTemplate.boundHashOps(AUTH_PRIVILEGE_KEY);
         Map<String, String> current = hashOps.entries();
-        // 1.删除已不存在的权限项（保留版本字段），避免删除-重建期间出现空缓存的放行窗口
+        // 1.删除已不存在的权限项，避免删除-重建期间出现空缓存的放行窗口
         for (String field : current.keySet()) {
             if (!AUTH_PRIVILEGE_VERSION_KEY.equals(field) && !desired.containsKey(field)) {
                 hashOps.delete(field);

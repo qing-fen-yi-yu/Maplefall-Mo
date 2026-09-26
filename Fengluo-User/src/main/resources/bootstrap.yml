@@ -46,21 +46,23 @@ fl:
     database: fl_auth
     username: root
     password: 123456
-    driver-class-name: com.mysql.cj.jdbc.Driver   # 推荐用新版驱动
+    driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
     host: localhost
     port: 5672
-    vhost: /maplefall        # 根据你的元数据补充
+    vhost: /maplefall
     username: guilu
     password: 123
   auth:
     resource:
       enable: true
+      # 网关匹配的是「网关可见」的完整路径：路由前缀 /user + 应用 context-path /maple + 控制器 /user。
+      # 原来的 user/account/* 与真实路径完全对不上（控制器已改到 /user/login），
+      # 匹配全部落空，登录只是靠「无权限规则即放行」侥幸通过。
+      # 归一化后形如 *:/user/maple/user/login，与网关侧的 "METHOD:/path" 做 Ant 匹配。
       exclude-login-paths:
-        - "user/account/login"
-        # 刷新必须免登录：access token 过期后仍要能换新
-        - "user/account/refresh"
-        # 注销免登录：access token 已过期时也要能清理 refresh token
-        - "user/account/logout"
-        - "admin/account/login"
+        - "user/maple/user/login"
+        - "user/maple/user/refresh"
+        - "user/maple/user/logout"
+        - "admin/account/login"   # 管理端尚未实现，先留占位
 

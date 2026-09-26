@@ -10,10 +10,6 @@ import org.springframework.stereotype.Component;
 /**
  * 启动时把权限配置发布到 Redis（auth:privileges），
  * 使网关在收到第一个请求前就有可用的权限缓存。
- * <p>
- * 发布失败只记录日志、不阻断启动：Redis 不可用时 {@code AuthUtil} 会保留上一次的缓存，
- * 未配置权限的路径依然放行，而 token 的有效性校验不受影响。
- * 权限数据变更后应由业务侧再次调用 {@link PrivilegeService#publish()}。
  */
 @Slf4j
 @Component

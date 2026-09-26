@@ -9,8 +9,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 
 /**
- * 业务模块侧自动配置：注册 {@link ResourceAuthProperties}，
- * 并在存在 Nacos 服务发现时，把登录拦截路径上报为实例元数据。
+ * 把登录拦截路径上报为实例元数据。
  */
 @AutoConfiguration
 @ConditionalOnClass(NacosDiscoveryProperties.class)

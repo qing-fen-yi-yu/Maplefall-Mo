@@ -2,6 +2,7 @@ package com.guilu.resolver;
 
 import com.guilu.util.PathUtil;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -18,8 +19,6 @@ import static com.guilu.constants.AuthMetadataConstants.INCLUDE_PATHS_KEY;
 import static com.guilu.constants.AuthMetadataConstants.PATH_DELIMITER;
 
 /**
- * 网关侧：聚合各业务模块通过 Nacos 实例元数据上报的登录拦截路径。
- * <p>
  * 业务模块的 exclude/include-login-paths 由其 AuthMetadataRegistrar 发布到实例元数据，
  * 这里在启动时以及服务变更（{@link HeartbeatEvent}）时汇总，供 AccountAuthFilter 使用。
  */
@@ -29,7 +28,9 @@ public class AuthMetadataResolver {
 
     private final DiscoveryClient discoveryClient;
 
+    @Getter
     private volatile Set<String> excludePaths = Set.of();
+    @Getter
     private volatile Set<String> includePaths = Set.of();
 
     public AuthMetadataResolver(DiscoveryClient discoveryClient) {
@@ -81,11 +82,4 @@ public class AuthMetadataResolver {
         }
     }
 
-    public Set<String> getExcludePaths() {
-        return excludePaths;
-    }
-
-    public Set<String> getIncludePaths() {
-        return includePaths;
-    }
 }

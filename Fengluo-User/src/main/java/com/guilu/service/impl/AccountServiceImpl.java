@@ -2,6 +2,7 @@ package com.guilu.service.impl;
 
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.guilu.domain.Result;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.LoginUserDTO;
 import com.guilu.domain.dto.TokenPair;
@@ -23,11 +24,6 @@ import static com.guilu.constants.AuthErrorInfo.Msg.INVALID_TOKEN;
 
 /**
  * 账号认证实现。
- * <p>
- * 逻辑删除：Nacos 的 sharding-mysql.yaml 配置了
- * {@code mybatis-plus.global-config.db-config.logic-delete-field: deleted}，
- * MyBatis-Plus 会自动为 BaseMapper/Wrapper 查询追加 deleted = 0。
- * 这里仍显式写出该条件，避免登录这条安全敏感路径依赖外部配置是否加载成功。
  */
 @Slf4j
 @Service
@@ -68,7 +64,7 @@ public class AccountServiceImpl implements AccountService {
         if (user.getStatus() == null || user.getStatus() != 1) {
             throw new UnauthorizedException(ACCOUNT_DISABLED);
         }
-        // 5.解析写入 token 的角色（一人一角色，取 sort 最小的启用角色）
+        // 5.解析写入 token 的角色
         Long roleId = sysUserRoleMapper.selectPrimaryRoleId(user.getId());
         if (roleId == null) {
             log.warn("用户 {} 未绑定任何启用角色，登录后所有受权限控制的路径都会被拒绝", user.getId());
@@ -99,7 +95,25 @@ public class AccountServiceImpl implements AccountService {
             // 两个 token 都未携带，无需吊销
             return;
         }
+        Long userId = resolveUserId(accessToken, refreshToken);
+        if (userId != null) {
+            log.info("用户 {} 注销", userId);
+        }
         tokenService.revoke(accessToken, refreshToken);
+    }
+
+    /**
+     * 从 access/refresh token 尽力解析当前用户，仅用于日志，失败返回 null。
+     * 注销接口在网关的排除登录列表内（token 过期也应能注销），网关注入的 user-info 头
+     * 对注销请求不存在，因此这里不能依赖 UserContext，只能从 token 自身解析身份。
+     */
+    private Long resolveUserId(String accessToken, String refreshToken) {
+        Result<LoginUserDTO> r = tokenService.verify(accessToken);
+        if (r.isLoginStatus()) {
+            return r.getData().getUserId();
+        }
+        r = tokenService.verify(refreshToken);
+        return r.isLoginStatus() ? r.getData().getUserId() : null;
     }
 
     /**
@@ -119,9 +133,6 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * 记录最近一次登录时间与IP，失败不影响登录结果。
-     * 显式指定要更新的两列，不依赖全局 field-strategy 的取值：
-     * Nacos 里的 {@code global-config.field-strategy} 在 MyBatis-Plus 3.5.x 已不存在
-     * （被 insert/update/where-strategy 取代），实际生效的是默认的 NOT_NULL。
      */
     private void recordLogin(Long userId, HttpServletRequest httpRequest) {
         try {

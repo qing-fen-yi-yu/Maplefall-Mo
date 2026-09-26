@@ -5,6 +5,5 @@ monitor:
 encrypt:
   key-store:
     alias: tutorialspedia  #别名
-    location: classpath:MapleFall.jks  #KeyStore 证书库名称
-    password: maplefall123456   #证书库密码
-    secret: maplefall123456   #秘钥
+    location: ${ENCRYPT_KEY_STORE_LOCATION:classpath:MapleFall.jks}  #证书库位置，支持 classpath: 或 file:/绝对路径
+    password: ${ENCRYPT_KEY_STORE_PASSWORD:maplefall123456}   #证书库口令：由环境变量/Nacos 提供，不入仓库

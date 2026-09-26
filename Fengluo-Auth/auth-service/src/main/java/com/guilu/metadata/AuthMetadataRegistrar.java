@@ -14,9 +14,7 @@ import static com.guilu.constants.AuthMetadataConstants.INCLUDE_PATHS_KEY;
 import static com.guilu.constants.AuthMetadataConstants.PATH_DELIMITER;
 
 /**
- * 业务模块侧：把本地 fl.auth.resource 中配置的登录拦截路径，
  * 以实例元数据的形式上报到 Nacos，供网关聚合并用于路径放行判断。
- * 保证早于服务注册（NacosRegistration 由该 bean 派生），使上报一定生效。
  */
 @Slf4j
 public class AuthMetadataRegistrar implements BeanPostProcessor {

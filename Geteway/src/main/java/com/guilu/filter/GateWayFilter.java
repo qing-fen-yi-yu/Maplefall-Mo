@@ -4,6 +4,8 @@ import com.guilu.config.AuthProperties;
 import com.guilu.exception.RequestException.ForbiddenException;
 import com.guilu.util.PathUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -19,6 +21,7 @@ import static com.guilu.constants.AuthErrorInfo.Msg.FORBIDDEN;
 @RequiredArgsConstructor
 @EnableConfigurationProperties({AuthProperties.class})
 public class GateWayFilter implements GlobalFilter, Ordered {
+    private static final Log log = LogFactory.getLog(GateWayFilter.class);
     private final AuthProperties authProperties;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -29,7 +32,7 @@ public class GateWayFilter implements GlobalFilter, Ordered {
         if (PathUtil.isPath(path, pathMatcher, authProperties.resolveGatewayExclude())) {
             return chain.filter(exchange);
         }
-        // 2.命中拦截路径（黑名单），禁止访问
+        // 2.命中拦截路径，禁止访问
         if (PathUtil.isPath(path, pathMatcher, authProperties.resolveGatewayInclude())) {
             throw new ForbiddenException(FORBIDDEN);
         }
