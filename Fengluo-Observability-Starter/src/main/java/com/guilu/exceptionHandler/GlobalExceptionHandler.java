@@ -1,4 +1,4 @@
-package com.fengluo.exception;
+package com.guilu.exceptionHandler;
 
 import com.guilu.exception.GlobalException;
 import com.guilu.exception.RequestException.ForbiddenException;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
- * 全局业务异常处理器（仅 Servlet 环境）。
+ * 全局业务异常处理器
  */
 @RestControllerAdvice
 @Order(Ordered.LOWEST_PRECEDENCE)  // 优先级最低，业务自己的处理器优先

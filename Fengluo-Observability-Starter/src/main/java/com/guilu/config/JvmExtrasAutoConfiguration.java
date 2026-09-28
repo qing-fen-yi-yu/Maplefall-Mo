@@ -2,6 +2,7 @@ package com.guilu.config;
 
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics;
 import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -30,6 +31,11 @@ public class JvmExtrasAutoConfiguration {
     @ConditionalOnMissingBean
     public ProcessThreadMetrics processThreadMetrics() {
         return new ProcessThreadMetrics();
+    }
+    @Bean
+    @ConditionalOnMissingBean
+    public JvmInfoMetrics jvmInfoMetrics(){
+        return new JvmInfoMetrics();
     }
 
     @PostConstruct

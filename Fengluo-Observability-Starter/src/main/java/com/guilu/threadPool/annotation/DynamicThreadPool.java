@@ -1,4 +1,4 @@
-package com.guilu.ThreadPoolOb.annotation;
+package com.guilu.threadPool.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

@@ -65,4 +65,14 @@ fl:
         - "user/maple/user/refresh"
         - "user/maple/user/logout"
         - "admin/account/login"   # 管理端尚未实现，先留占位
-
+monitor:
+  threadpool:
+    dynamic:
+      enabled: true
+  exception:
+    enabled: false
+  jvm:
+    basic:
+      enabled: false
+    extras:
+      enabled: false

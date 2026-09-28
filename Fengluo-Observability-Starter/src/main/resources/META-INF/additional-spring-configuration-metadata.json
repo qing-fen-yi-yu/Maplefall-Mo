@@ -3,7 +3,7 @@
     "name": "motitor"
   }],
   "properties": [{
-    "name": "monitor.exception",
+    "name": "monitor.exception.enabled",
     "type": "java.lang.Boolean",
     "description": "是否启用异常监控",
     "defaultValue": true
@@ -13,7 +13,7 @@
     "description": "jvm扩展监控功能",
     "defaultValue": true
   },{
-    "name": "monitor.jvm.basic",
+    "name": "monitor.jvm.basic.enabled",
     "type": "java.lang.Boolean",
     "description": "jvm基础监控信息",
     "defaultValue": true

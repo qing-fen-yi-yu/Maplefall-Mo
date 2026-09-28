@@ -1,7 +1,3 @@
-monitor:
-  threadpool:
-    dynamic:
-      enabled: true
 encrypt:
   key-store:
     alias: tutorialspedia  #别名

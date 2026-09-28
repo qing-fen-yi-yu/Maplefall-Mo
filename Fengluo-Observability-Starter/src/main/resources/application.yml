@@ -1,0 +1,10 @@
+server:
+  port: ${server.port}
+spring:
+  application:
+    name: ${spring.application.name}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: *

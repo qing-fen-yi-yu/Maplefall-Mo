@@ -22,7 +22,6 @@ public class PrivilegeCacheInitializer implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         try {
             privilegeService.publish();
-            log.info("权限缓存初始化完成");
         } catch (Exception e) {
             log.error("权限缓存初始化失败，本次启动不阻断；权限变更后请重新发布", e);
         }

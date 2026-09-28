@@ -47,10 +47,6 @@
             <artifactId>spring-web</artifactId>
             <optional>true</optional>
         </dependency>
-
-        <!-- 不能标 optional：标了就不会传递给消费方，JvmExtrasAutoConfiguration 上的
-             @ConditionalOnClass(ProcessMemoryMetrics.class) 会因此永远不满足，
-             自动配置静默失效（目标类由本 starter 直接引用，只有消费方自己也声明该依赖才会在） -->
         <dependency>
             <groupId>io.github.mweirauch</groupId>
             <artifactId>micrometer-jvm-extras</artifactId>

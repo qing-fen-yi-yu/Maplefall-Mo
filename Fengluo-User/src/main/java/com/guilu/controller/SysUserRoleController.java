@@ -1,9 +1,13 @@
 package com.guilu.controller;
 
 
+import com.guilu.threadPool.annotation.DynamicThreadPool;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * <p>
@@ -16,5 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/role")
 public class SysUserRoleController {
-
+    @DynamicThreadPool
+    private final ExecutorService executorService =  Executors.newFixedThreadPool(4);
 }

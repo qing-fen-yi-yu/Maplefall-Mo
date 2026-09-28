@@ -2,7 +2,7 @@ package com.guilu.jwt;
 
 import cn.hutool.jwt.signers.JWTSigner;
 import cn.hutool.jwt.signers.JWTSignerUtil;
-import com.guilu.ThreadPoolOb.annotation.DynamicThreadPool;
+import com.guilu.threadPool.annotation.DynamicThreadPool;
 import com.guilu.constants.JwtConstants;
 import com.guilu.utils.MarkedRunnable;
 import jakarta.annotation.PostConstruct;
