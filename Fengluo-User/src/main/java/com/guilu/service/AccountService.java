@@ -1,6 +1,7 @@
 package com.guilu.service;
 
 import com.guilu.domain.dto.LoginRequest;
+import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -36,4 +37,6 @@ public interface AccountService {
      * @param refreshToken 当前 refresh token，可为 null
      */
     void logout(String accessToken, String refreshToken);
+
+    TokenPair registerUser(RegisterRequest regisUser, HttpServletRequest request);
 }

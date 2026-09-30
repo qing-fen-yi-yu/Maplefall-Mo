@@ -20,7 +20,6 @@ import static com.guilu.constants.AuthMetadataConstants.PATH_DELIMITER;
 
 /**
  * 业务模块的 exclude/include-login-paths 由其 AuthMetadataRegistrar 发布到实例元数据，
- * 这里在启动时以及服务变更（{@link HeartbeatEvent}）时汇总，供 AccountAuthFilter 使用。
  */
 @Slf4j
 @Component

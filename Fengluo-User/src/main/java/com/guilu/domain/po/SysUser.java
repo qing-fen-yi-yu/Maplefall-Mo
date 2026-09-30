@@ -1,5 +1,6 @@
 package com.guilu.domain.po;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.time.LocalDateTime;
@@ -44,7 +45,8 @@ public class SysUser implements Serializable {
     /**
      * 密码摘要，禁止保存明文密码
      */
-    private String passwordHash;
+    @TableField("password_hash")
+    private String password;
 
     /**
      * 用户邮箱
@@ -95,6 +97,4 @@ public class SysUser implements Serializable {
      * 0未删除，1已删除
      */
     private Integer deleted;
-
-
 }

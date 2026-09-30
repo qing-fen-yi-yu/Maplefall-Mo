@@ -4,12 +4,14 @@ import com.guilu.constants.JwtConstants;
 import com.guilu.domain.Result;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.RefreshTokenRequest;
+import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
 import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.service.AccountService;
 import com.guilu.service.ISysUserOauthService;
 import com.guilu.utils.UserContext;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,8 +29,13 @@ public class AccountController {
     private final ISysUserOauthService oauthService;
     private final AccountService accountService;
 
+    @PostMapping("/register")
+    public Result<TokenPair> register(@Valid @RequestBody RegisterRequest regisUser, HttpServletRequest request){
+        return  Result.success(accountService.registerUser(regisUser,request));
+    }
+
     @PostMapping("/login")
-    public Result<TokenPair> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+    public Result<TokenPair> login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         return Result.success(accountService.login(request, httpRequest));
     }
     @PostMapping("/refresh")

@@ -2,16 +2,17 @@ package com.guilu.service.impl;
 
 import cn.hutool.crypto.digest.BCrypt;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.guilu.constants.ResultInfo;
 import com.guilu.domain.Result;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.LoginUserDTO;
+import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
 import com.guilu.domain.po.SysUser;
 import com.guilu.exception.RequestException.UnauthorizedException;
-import com.guilu.mapper.SysUserMapper;
-import com.guilu.mapper.SysUserRoleMapper;
-import com.guilu.service.AccountService;
-import com.guilu.service.TokenService;
+import com.guilu.service.*;
+import com.guilu.util.PasswordEncoder;
+import com.guilu.utils.BeanUtils;
 import com.guilu.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,6 @@ import static com.guilu.constants.AuthErrorInfo.Msg.INVALID_TOKEN;
 @Service
 @RequiredArgsConstructor
 public class AccountServiceImpl implements AccountService {
-
     /** 登录失败统一提示，不区分用户名不存在与密码错误，避免泄露账号是否存在 */
     private static final String LOGIN_FAILED = "用户名或密码错误";
     private static final String ACCOUNT_DISABLED = "账号已被禁用";
@@ -39,9 +39,10 @@ public class AccountServiceImpl implements AccountService {
 
     private static final String X_FORWARDED_FOR = "X-Forwarded-For";
 
-    private final SysUserMapper sysUserMapper;
-    private final SysUserRoleMapper sysUserRoleMapper;
+    private final ISysUserService userService;
+    private final ISysUserRoleService userRoleService;
     private final TokenService tokenService;
+    private final ImageCodeService imageCodeService;
 
     @Override
     public TokenPair login(LoginRequest request, HttpServletRequest httpRequest) {
@@ -52,12 +53,12 @@ public class AccountServiceImpl implements AccountService {
             throw new UnauthorizedException(LOGIN_FAILED);
         }
         // 2.查询用户
-        SysUser user = sysUserMapper.selectOne(Wrappers.<SysUser>lambdaQuery()
+        SysUser user = userService.getBaseMapper().selectOne(Wrappers.<SysUser>lambdaQuery()
                 .eq(SysUser::getUsername, request.getUsername().trim())
                 .eq(SysUser::getDeleted, 0)
                 .last("LIMIT 1"));
         // 3.校验密码（password_hash 可能为空，例如仅第三方登录的账号）
-        if (user == null || !matches(request.getPassword(), user.getPasswordHash())) {
+        if (user == null || !matches(request.getPassword(), user.getPassword())) {
             throw new UnauthorizedException(LOGIN_FAILED);
         }
         // 4.校验状态
@@ -65,9 +66,9 @@ public class AccountServiceImpl implements AccountService {
             throw new UnauthorizedException(ACCOUNT_DISABLED);
         }
         // 5.解析写入 token 的角色
-        Long roleId = sysUserRoleMapper.selectPrimaryRoleId(user.getId());
+        Long roleId = userRoleService.selectPrimaryRoleId(user.getId());
         if (roleId == null) {
-            log.warn("用户 {} 未绑定任何启用角色，登录后所有受权限控制的路径都会被拒绝", user.getId());
+            log.warn("用户 {} 未绑定任何启用角色", user.getId());
         }
         // 6.签发双 token 并记录登录信息
         LoginUserDTO loginUser = new LoginUserDTO();
@@ -76,8 +77,6 @@ public class AccountServiceImpl implements AccountService {
         loginUser.setRememberMe(request.getRememberMe());
         TokenPair tokenPair = tokenService.issue(loginUser);
         recordLogin(user.getId(), httpRequest);
-        log.info("用户 {} 登录成功, roleId={}, rememberMe={}",
-                user.getId(), roleId, request.getRememberMe());
         return tokenPair;
     }
 
@@ -95,11 +94,27 @@ public class AccountServiceImpl implements AccountService {
             // 两个 token 都未携带，无需吊销
             return;
         }
-        Long userId = resolveUserId(accessToken, refreshToken);
-        if (userId != null) {
-            log.info("用户 {} 注销", userId);
-        }
+        resolveUserId(accessToken, refreshToken);
         tokenService.revoke(accessToken, refreshToken);
+    }
+
+    @Override
+    public TokenPair registerUser(RegisterRequest regisUser, HttpServletRequest request) {
+        if(imageCodeService.verifyCode(regisUser.getCode())){
+            throw new UnauthorizedException(ResultInfo.Msg.INVALID_VERIFY_CODE);
+        }
+        SysUser sysUser = BeanUtils.copyBean(regisUser, SysUser.class);
+        sysUser.setCreatedAt(LocalDateTime.now());
+        sysUser.setUpdatedAt(LocalDateTime.now());
+        sysUser.setLastLoginAt(LocalDateTime.now());
+        sysUser.setLastLoginIp(resolveClientIp(request));
+        sysUser.setPassword(PasswordEncoder.encode(sysUser.getPassword()));
+        userService.save(sysUser);
+        LoginUserDTO userDTO = new LoginUserDTO();
+        userDTO.setUserId(sysUser.getId());
+        userDTO.setRoleId(0L);
+        userDTO.setRememberMe(false);
+        return tokenService.issue(userDTO);
     }
 
     /**
@@ -117,16 +132,18 @@ public class AccountServiceImpl implements AccountService {
     }
 
     /**
-     * BCrypt 比对。哈希串格式非法时按密码错误处理，不向上抛异常。
+     * 密码校验
+     * @param rawPassword --用户的密码
+     * @param passwordHash --加密密码
      */
     private boolean matches(String rawPassword, String passwordHash) {
         if (StringUtils.isBlank(passwordHash)) {
             return false;
         }
         try {
-            return BCrypt.checkpw(rawPassword, passwordHash);
+            return PasswordEncoder.matches(rawPassword, passwordHash);
         } catch (IllegalArgumentException e) {
-            log.warn("password_hash 不是合法的 BCrypt 摘要");
+            log.error(e.getMessage());
             return false;
         }
     }
@@ -136,12 +153,12 @@ public class AccountServiceImpl implements AccountService {
      */
     private void recordLogin(Long userId, HttpServletRequest httpRequest) {
         try {
-            sysUserMapper.update(null, Wrappers.<SysUser>lambdaUpdate()
+            userService.getBaseMapper().update(null, Wrappers.<SysUser>lambdaUpdate()
                     .eq(SysUser::getId, userId)
                     .set(SysUser::getLastLoginAt, LocalDateTime.now())
                     .set(SysUser::getLastLoginIp, resolveClientIp(httpRequest)));
         } catch (Exception e) {
-            log.error("记录用户 {} 登录信息失败", userId, e);
+            log.warn("记录用户 {} 登录信息失败", userId, e);
         }
     }
 

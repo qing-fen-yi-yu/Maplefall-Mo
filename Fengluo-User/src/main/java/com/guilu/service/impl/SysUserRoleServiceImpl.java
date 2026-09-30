@@ -17,4 +17,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUserRole> implements ISysUserRoleService {
 
+    @Override
+    public Long selectPrimaryRoleId(Long id) {
+        return getBaseMapper().selectPrimaryRoleId(id);
+    }
 }

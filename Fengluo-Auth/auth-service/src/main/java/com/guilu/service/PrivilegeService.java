@@ -35,7 +35,7 @@ public class PrivilegeService {
     /**
      * 重新加载权限并写入 Redis 缓存（多实例下用分布式锁避免重复发布）。
      */
-    public void publish() {
+    public void publish() throws InterruptedException {
         Boolean locked = stringRedisTemplate.opsForValue()
                 .setIfAbsent(LOCK_AUTH_PRIVILEGE_KEY, "1", LOCK_TTL);
         if (!Boolean.TRUE.equals(locked)) {

@@ -1,12 +1,4 @@
 package com.guilu.utils;
-
-/**
- * @ClassName SignUtils
- * @author wusongsong
- * @since 2022/7/3 11:25
- * @version 1.0.0
- **/
-
 import cn.hutool.core.util.HexUtil;
 import com.guilu.exception.BusinessException.CommonException;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +22,8 @@ public class SignUtils {
 
     private static final String TOKEN_VERSION = "v1";
 
-    private static final List<String> ALLOWED_METHODS = Arrays.asList("GET", "POST", "PUT", "DELETE", "HEAD");
+    private static final List<String> ALLOWED_METHODS =
+            Arrays.asList("GET", "POST", "PUT", "DELETE", "HEAD");
 
     /**
      * 生成token，用于调用支付系统的模块或外部系统调用
