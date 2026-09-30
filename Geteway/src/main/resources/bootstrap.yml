@@ -8,7 +8,7 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.150.104:8848
+        server-addr: 127.0.0.1:8848
         namespace: d287a4e1-225a-4254-bd10-947bc27f15de  # 共享配置所在命名空间 Fengluo
         file-extension: yaml
         shared-configs: # 共享配置

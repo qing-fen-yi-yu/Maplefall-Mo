@@ -1,12 +1,12 @@
 spring:
   cloud:
     nacos:
-      server-addr: 192.168.150.104:8848 # nacos注册中心
+      server-addr: 127.0.0.1:8848 # nacos注册中心
       discovery:
         namespace: d287a4e1-225a-4254-bd10-947bc27f15de #命名空间
         group: DEFAULT_GROUP #组别
   elasticsearch:
-    uris: 192.168.150.104:9200  # Elasticsearch 地址
+    uris: 127.0.0.1:9200  # Elasticsearch 地址
     connection-timeout: 5000ms
     socket-timeout: 60000ms
   data:

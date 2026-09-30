@@ -13,7 +13,7 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 192.168.150.104:8848
+        server-addr: 127.0.0.1:8848
         namespace: d287a4e1-225a-4254-bd10-947bc27f15de  # 共享配置所在命名空间 Fengluo
         file-extension: yaml
         shared-configs: # 共享配置
@@ -33,7 +33,7 @@ spring:
     active: dev
 fl:
   redis:
-    host: 192.168.150.104   # Redis地址
+    host: 127.0.0.1  # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -41,7 +41,7 @@ fl:
       min-idle: 1
       max-wait: 300
   mysql:
-    host: 192.168.150.104
+    host: 127.0.0.1
     port: 3306
     database: fl_auth
     username: root
@@ -56,10 +56,6 @@ fl:
   auth:
     resource:
       enable: true
-      # 网关匹配的是「网关可见」的完整路径：路由前缀 /user + 应用 context-path /maple + 控制器 /user。
-      # 原来的 user/account/* 与真实路径完全对不上（控制器已改到 /user/login），
-      # 匹配全部落空，登录只是靠「无权限规则即放行」侥幸通过。
-      # 归一化后形如 *:/user/maple/user/login，与网关侧的 "METHOD:/path" 做 Ant 匹配。
       exclude-login-paths:
         - "user/maple/user/login"
         - "user/maple/user/refresh"
@@ -70,7 +66,7 @@ monitor:
     dynamic:
       enabled: true
   exception:
-    enabled: false
+    enabled: true
   jvm:
     basic:
       enabled: false
