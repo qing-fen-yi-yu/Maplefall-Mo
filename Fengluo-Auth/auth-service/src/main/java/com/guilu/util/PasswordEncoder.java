@@ -13,15 +13,15 @@ public final class PasswordEncoder {
         return BCrypt.hashpw(rawPassword, BCrypt.gensalt(STRENGTH));
     }
 
+    /**
+     * 校验明文与摘要是否匹配。摘要格式非法时 BCrypt 会抛 IllegalArgumentException，
+     * 这里不吞掉，交由调用方决定如何处理（登录路径会捕获并视为校验失败）。
+     */
     public static boolean matches(String rawPassword, String encodedPassword) {
         if (StringUtils.isBlank(rawPassword) || StringUtils.isBlank(encodedPassword)) {
             return false;
         }
-        try {
-            return BCrypt.checkpw(rawPassword, encodedPassword);
-        } catch (IllegalArgumentException e) {
-            throw e;
-        }
+        return BCrypt.checkpw(rawPassword, encodedPassword);
     }
 }
 

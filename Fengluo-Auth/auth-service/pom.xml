@@ -40,6 +40,13 @@
             <artifactId>spring-webmvc</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- PasswordEncoder 用的 BCrypt 来自这里。当前是靠 spring-cloud-commons 传递进来的，
+             显式声明以免上游依赖变动后以 NoClassDefFoundError 的形式无声炸掉。
+             版本由 spring-boot-starter-parent 管理 -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
+        </dependency>
         <!-- token 状态存储所需的 Redis 客户端，由使用方提供 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
