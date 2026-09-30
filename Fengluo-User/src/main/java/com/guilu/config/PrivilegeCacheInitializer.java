@@ -8,8 +8,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
 /**
- * 启动时把权限配置发布到 Redis（auth:privileges），
- * 使网关在收到第一个请求前就有可用的权限缓存。
+ * 权限初始化配置，集成ApplicationRunner接口
  */
 @Slf4j
 @Component

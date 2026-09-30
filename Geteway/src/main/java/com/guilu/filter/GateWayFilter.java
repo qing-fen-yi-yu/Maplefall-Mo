@@ -4,6 +4,7 @@ import com.guilu.config.AuthProperties;
 import com.guilu.exception.RequestException.ForbiddenException;
 import com.guilu.util.PathUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -17,17 +18,18 @@ import reactor.core.publisher.Mono;
 
 import static com.guilu.constants.AuthErrorInfo.Msg.FORBIDDEN;
 
+@Slf4j
 @Configuration
 @RequiredArgsConstructor
 @EnableConfigurationProperties({AuthProperties.class})
 public class GateWayFilter implements GlobalFilter, Ordered {
-    private static final Log log = LogFactory.getLog(GateWayFilter.class);
     private final AuthProperties authProperties;
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
+        log.info("当前请求路径+{}",path);
         // 1.命中白名单路径，直接放行
         if (PathUtil.isPath(path, pathMatcher, authProperties.resolveGatewayExclude())) {
             return chain.filter(exchange);

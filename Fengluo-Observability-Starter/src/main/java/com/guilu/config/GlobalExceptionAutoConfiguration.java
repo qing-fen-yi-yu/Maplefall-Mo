@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 /**
@@ -24,13 +25,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
         matchIfMissing = true
 )
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
-@ConditionalOnClass(RestControllerAdvice.class)
 public class GlobalExceptionAutoConfiguration {
 
     @Bean
-    @ConditionalOnMissingBean
     public GlobalExceptionHandler globalExceptionHandler(MeterRegistry meterRegistry) {
-        log.info("记载全局异常记录处理器....");
         return new GlobalExceptionHandler(meterRegistry);
     }
 }

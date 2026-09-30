@@ -31,7 +31,7 @@ public class RequestIdRelayFilter implements GlobalFilter, Ordered {
                     // 3.1.添加请求id标示
                     b.header(REQUEST_ID_HEADER, requestId);
                     // 3.2.添加网关标示
-                    if (!path.startsWith("/ps/notify")) {
+                    if (!path.startsWith("/gw/notify")) {
                         b.header(REQUEST_FROM_HEADER, GATEWAY_ORIGIN_NAME);
                     }
                 }
