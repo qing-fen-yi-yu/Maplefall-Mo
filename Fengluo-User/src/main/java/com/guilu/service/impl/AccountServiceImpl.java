@@ -2,17 +2,21 @@ package com.guilu.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.guilu.constants.ResultInfo;
+import com.guilu.domain.Enum.CodeTypeEnum;
 import com.guilu.domain.Result;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.LoginUserDTO;
 import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
 import com.guilu.domain.po.SysUser;
+import com.guilu.domain.vo.ImageCodeVO;
 import com.guilu.exception.RequestException.BadRequestException;
 import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.service.*;
 import com.guilu.util.PasswordEncoder;
 import com.guilu.utils.BeanUtils;
+import com.guilu.utils.BooleanUtils;
+import com.guilu.utils.ObjectUtils;
 import com.guilu.utils.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +24,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 
+import java.awt.*;
 import java.time.LocalDateTime;
 
 import static com.guilu.constants.AuthErrorInfo.Msg.INVALID_TOKEN;
+import static com.guilu.constants.ErrConstants.ACCOUNT.*;
 
 /**
  * 账号认证实现。
@@ -35,15 +41,8 @@ public class AccountServiceImpl implements AccountService {
     private static final String LOGIN_FAILED = "用户名或密码错误";
     private static final String ACCOUNT_DISABLED = "账号已被禁用";
 
-    /** 注册冲突提示，经 BadRequestException 映射为 400 */
-    private static final String USERNAME_ALREADY_EXISTS = "用户名已存在";
-    private static final String EMAIL_ALREADY_EXISTS = "邮箱已被注册";
-    private static final String REGISTER_CONFLICT = "注册信息已存在，请更换用户名或邮箱";
-
     /**
      * 用户不存在时用来消耗等量 BCrypt 时间的占位摘要。
-     * 成本因子 10，与 {@link PasswordEncoder#encode} 保持一致；没有它的话
-     * “账号不存在”会比“密码错误”快一个数量级，可被用来枚举账号。
      */
     private static final String DUMMY_PASSWORD_HASH =
             "$2a$10$scP/ehLaVykNmHgc3PGRE./T4BfygSviT8z2myTTq9e2Bq4eljuXK";
@@ -65,6 +64,9 @@ public class AccountServiceImpl implements AccountService {
                 || StringUtils.isBlank(request.getUsername())
                 || StringUtils.isBlank(request.getPassword())) {
             throw new UnauthorizedException(LOGIN_FAILED);
+        }
+        if (vailUserCode(request.getCode(),request.getCodeId())){
+            throw new UnauthorizedException("验证码错误");
         }
         // 2.查询用户
         SysUser user = userService.getBaseMapper().selectOne(Wrappers.<SysUser>lambdaQuery()
@@ -117,10 +119,9 @@ public class AccountServiceImpl implements AccountService {
 
     @Override
     public TokenPair registerUser(RegisterRequest regisUser, HttpServletRequest request) {
-        if (!imageCodeService.verifyCode(regisUser.getCode())) {
+        if (!imageCodeService.verifyCode(regisUser.getCode(),regisUser.getCodeId())) {
             throw new UnauthorizedException(ResultInfo.Msg.INVALID_VERIFY_CODE);
         }
-        // 登录时对用户名 trim，注册也必须 trim，否则注册 " bob " 会存下带空格的值且永远登录不上
         String username = regisUser.getUsername().trim();
         if (StringUtils.isBlank(username)) {
             throw new BadRequestException(ResultInfo.Msg.REQUEST_PARAM_ILLEGAL);
@@ -137,26 +138,28 @@ public class AccountServiceImpl implements AccountService {
         sysUser.setLastLoginAt(LocalDateTime.now());
         sysUser.setLastLoginIp(resolveClientIp(request));
         sysUser.setPassword(PasswordEncoder.encode(sysUser.getPassword()));
+        Long roleId;
         try {
             userService.save(sysUser);
+            roleId = userRoleService.selectPrimaryRoleId(sysUser.getId());
         } catch (DuplicateKeyException e) {
-            // 唯一索引兜底：预检查与插入之间存在竞态，并发注册仍可能走到这里
-            log.warn("注册撞唯一索引: {}", e.getMessage());
             throw new BadRequestException(REGISTER_CONFLICT);
         }
-        // 注册不分配角色：roleId 留空且不写 sys_user_role，由管理员后续分配。
-        // 签出的 token 匹配不到任何路径权限，用户可登录但对受保护接口无权限。
         LoginUserDTO userDTO = new LoginUserDTO();
         userDTO.setUserId(sysUser.getId());
         userDTO.setRememberMe(false);
+        userDTO.setRoleId(roleId);
         return tokenService.issue(userDTO);
     }
 
-    /**
-     * 注册前的唯一性预检查，只为给出明确提示。这里刻意不过滤 deleted ——
-     * 唯一索引建在原始字段上，软删除的用户名依然占用唯一键，过滤反而会漏判。
-     * 并发下仍可能撞唯一索引，因此 save 处还兜底捕获 DuplicateKeyException。
-     */
+    @Override
+    public ImageCodeVO createCode(CodeTypeEnum typeEnum) {
+        if(ObjectUtils.hasNull(typeEnum)){
+            typeEnum = CodeTypeEnum.LINECAPTCHA;
+        }
+        return imageCodeService.createImageCode(typeEnum);
+    }
+
     private void assertNotRegistered(String username, String email) {
         if (userService.exists(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, username))) {
             throw new BadRequestException(USERNAME_ALREADY_EXISTS);
@@ -236,5 +239,8 @@ public class AccountServiceImpl implements AccountService {
             return value;
         }
         return value.substring(0, IP_MAX_LENGTH);
+    }
+    private Boolean vailUserCode(String code,String id){
+        return BooleanUtils.isTrue(imageCodeService.verifyCode(code,id));
     }
 }

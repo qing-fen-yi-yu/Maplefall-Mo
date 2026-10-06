@@ -1,9 +1,13 @@
 package com.guilu.service;
 
+import com.guilu.domain.Enum.CodeTypeEnum;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
+import com.guilu.domain.vo.ImageCodeVO;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.awt.*;
 
 /**
  * 账号认证：登录签发双 token、刷新、注销。
@@ -39,4 +43,6 @@ public interface AccountService {
     void logout(String accessToken, String refreshToken);
 
     TokenPair registerUser(RegisterRequest regisUser, HttpServletRequest request);
+
+    ImageCodeVO createCode(CodeTypeEnum codeTypeEnum);
 }

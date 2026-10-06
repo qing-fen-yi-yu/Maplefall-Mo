@@ -1,11 +1,13 @@
 package com.guilu.controller;
 
 import com.guilu.constants.JwtConstants;
+import com.guilu.domain.Enum.CodeTypeEnum;
 import com.guilu.domain.Result;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.RefreshTokenRequest;
 import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
+import com.guilu.domain.vo.ImageCodeVO;
 import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.service.AccountService;
 import com.guilu.service.ISysUserOauthService;
@@ -20,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.awt.*;
 
 @Slf4j
 @RestController
@@ -48,6 +52,10 @@ public class AccountController {
             @RequestHeader(value = JwtConstants.REFRESH_HEADER, required = false) String refreshToken) {
         accountService.logout(accessToken, refreshToken);
         return Result.success();
+    }
+    @GetMapping("/applyCode")
+    public Result<ImageCodeVO> applyCode(CodeTypeEnum codeTypeEnum){
+        return Result.success(accountService.createCode(codeTypeEnum));
     }
     /**
      * 当前登录用户

@@ -26,5 +26,8 @@ public class JwtConstants {
     public static final String AUTH_PRIVILEGE_VERSION_KEY = "version";
     public static final String LOCK_AUTH_PRIVILEGE_KEY = "lock:auth:privileges";
     /* 权限缓存 KEY  end */
-
+    // 图形验证码Key
+    public static final String IMAGE_CODE_KEY="auth:image:code:";
+    //图形验证码分布式Id生成器
+    public static final String IMAGE_CODE_ID_GEN_KEY="auth:image:code:id:";
 }
