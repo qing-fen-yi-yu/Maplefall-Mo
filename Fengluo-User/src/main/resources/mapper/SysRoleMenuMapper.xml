@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guilu.mapper.SysRoleMenuMapper">
+
+    <select id="selectMenuIdsByRoleId" resultType="java.lang.Long">
+        SELECT menu_id
+        FROM sys_role_menu
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+        ORDER BY menu_id
+    </select>
+
+    <insert id="upsertRoleMenu">
+        INSERT INTO sys_role_menu (id, role_id, menu_id, deleted)
+        VALUES (#{id}, #{roleId}, #{menuId}, 0)
+        ON DUPLICATE KEY UPDATE deleted = 0
+    </insert>
+
+    <!--
+      menuIds 为空表示「一个都不保留」，此时不能拼 NOT IN ()（非法 SQL），
+      去掉该条件后本条语句本身就等价于清空。
+    -->
+    <update id="softDeleteNotIn">
+        UPDATE sys_role_menu
+        SET deleted = 1
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+        <if test="menuIds != null and menuIds.size() > 0">
+            AND menu_id NOT IN
+            <foreach collection="menuIds" item="menuId" open="(" separator="," close=")">
+                #{menuId}
+            </foreach>
+        </if>
+    </update>
+
+    <update id="softDeleteByRoleId">
+        UPDATE sys_role_menu
+        SET deleted = 1
+        WHERE role_id = #{roleId}
+          AND deleted = 0
+    </update>
+
+</mapper>

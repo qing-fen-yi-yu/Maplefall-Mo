@@ -28,7 +28,7 @@ public class SysRole implements Serializable {
     /**
      * ID
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -70,11 +70,4 @@ public class SysRole implements Serializable {
      * 0未删除，1已删除
      */
     private Integer deleted;
-
-    /**
-     * 乐观锁版本号
-     */
-    private Integer version;
-
-
 }

@@ -28,7 +28,7 @@ public class SysUserOauth implements Serializable {
     /**
      * 主键ID
      */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -106,5 +106,8 @@ public class SysUserOauth implements Serializable {
      */
     private LocalDateTime updatedAt;
 
-
+    /**
+     * 删除标记
+     */
+    private Integer deleted;
 }

@@ -77,6 +77,14 @@
                 <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
                 <version>${mybatis-plus.version}</version>
             </dependency>
+            <!-- MyBatis-Plus 3.5.9 起把分页插件（PaginationInnerInterceptor）从 extension
+                 拆到了这个模块，且不再传递依赖，必须显式引入；版本号需与 starter 保持一致。
+                 缺了它 Page 查询不会拼 LIMIT，total 恒为 0。 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-jsqlparser</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
             <!--knife4j-->
             <dependency>
                 <groupId>com.github.xiaoymin</groupId>

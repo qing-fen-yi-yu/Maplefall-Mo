@@ -4,10 +4,10 @@ import com.guilu.domain.Enum.CodeTypeEnum;
 import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
+import com.guilu.domain.dto.update.PasswordUpdateRequest;
+import com.guilu.domain.dto.update.UserInfo;
 import com.guilu.domain.vo.ImageCodeVO;
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.awt.*;
 
 /**
  * 账号认证：登录签发双 token、刷新、注销。
@@ -45,4 +45,18 @@ public interface AccountService {
     TokenPair registerUser(RegisterRequest regisUser, HttpServletRequest request);
 
     ImageCodeVO createCode(CodeTypeEnum codeTypeEnum);
+
+    void updateMyInfo(UserInfo userInfo, HttpServletRequest request);
+
+    /**
+     * 修改当前登录用户的密码：校验原密码后写入新密码摘要。
+     * <p>
+     * 注意：已签发的 access / refresh token <b>不会</b>因此失效，它们仍在使用期内可用。
+     * 如需「改密即下线」需要联动 TokenStore，属于后续独立改动。
+     * </p>
+     *
+     * @param request     原密码 + 新密码
+     * @param httpRequest 用于在 UserContext 缺失时从 token 头解析当前用户
+     */
+    void changePassword(PasswordUpdateRequest request, HttpServletRequest httpRequest);
 }

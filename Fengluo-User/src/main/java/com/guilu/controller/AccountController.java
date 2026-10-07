@@ -7,30 +7,24 @@ import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.RefreshTokenRequest;
 import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
+import com.guilu.domain.dto.update.PasswordUpdateRequest;
+import com.guilu.domain.dto.update.UserInfo;
 import com.guilu.domain.vo.ImageCodeVO;
 import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.service.AccountService;
-import com.guilu.service.ISysUserOauthService;
 import com.guilu.utils.UserContext;
+import io.swagger.annotations.ApiOperation;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.awt.*;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
 @RequestMapping("/user")
 @RequiredArgsConstructor
 public class AccountController {
-    private final ISysUserOauthService oauthService;
     private final AccountService accountService;
 
     @PostMapping("/register")
@@ -53,6 +47,7 @@ public class AccountController {
         accountService.logout(accessToken, refreshToken);
         return Result.success();
     }
+    @ApiOperation("申请图形验证码")
     @GetMapping("/applyCode")
     public Result<ImageCodeVO> applyCode(CodeTypeEnum codeTypeEnum){
         return Result.success(accountService.createCode(codeTypeEnum));
@@ -60,6 +55,7 @@ public class AccountController {
     /**
      * 当前登录用户
      */
+    @ApiOperation("获取当前用户Id")
     @GetMapping("/me")
     public Result<Long> me() {
         Long userId = UserContext.getUser();
@@ -68,5 +64,22 @@ public class AccountController {
             throw new UnauthorizedException("未登录");
         }
         return Result.success(userId);
+    }
+    @ApiOperation("更新我的用户信息")
+    @PutMapping("/update/myInfo")
+    public Result<Void> updateInfo(@RequestBody UserInfo userInfo,HttpServletRequest request){
+        accountService.updateMyInfo(userInfo,request);
+        return Result.success();
+    }
+
+    /**
+     * 修改本人密码。已签发的 token 不会因此失效，仍在使用期内可用。
+     */
+    @ApiOperation("修改当前登录用户密码")
+    @PutMapping("/password")
+    public Result<Void> changePassword(@RequestBody PasswordUpdateRequest passwordUpdateRequest,
+                                       HttpServletRequest request) {
+        accountService.changePassword(passwordUpdateRequest, request);
+        return Result.success();
     }
 }

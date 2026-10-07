@@ -1,6 +1,7 @@
 package com.guilu.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.guilu.constants.JwtConstants;
 import com.guilu.constants.ResultInfo;
 import com.guilu.domain.Enum.CodeTypeEnum;
 import com.guilu.domain.Result;
@@ -8,27 +9,31 @@ import com.guilu.domain.dto.LoginRequest;
 import com.guilu.domain.dto.LoginUserDTO;
 import com.guilu.domain.dto.RegisterRequest;
 import com.guilu.domain.dto.TokenPair;
+import com.guilu.domain.dto.update.PasswordUpdateRequest;
+import com.guilu.domain.dto.update.UserInfo;
+import com.guilu.domain.dto.update.UserUpdateRequest;
 import com.guilu.domain.po.SysUser;
 import com.guilu.domain.vo.ImageCodeVO;
 import com.guilu.exception.RequestException.BadRequestException;
 import com.guilu.exception.RequestException.UnauthorizedException;
 import com.guilu.service.*;
 import com.guilu.util.PasswordEncoder;
-import com.guilu.utils.BeanUtils;
-import com.guilu.utils.BooleanUtils;
-import com.guilu.utils.ObjectUtils;
-import com.guilu.utils.StringUtils;
+import com.guilu.utils.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.awt.*;
 import java.time.LocalDateTime;
 
 import static com.guilu.constants.AuthErrorInfo.Msg.INVALID_TOKEN;
 import static com.guilu.constants.ErrConstants.ACCOUNT.*;
+import static com.guilu.constants.ErrConstants.USER.NEW_PASSWORD_REQUIRED;
+import static com.guilu.constants.ErrConstants.USER.OLD_PASSWORD_REQUIRED;
+import static com.guilu.constants.ErrConstants.USER.OLD_PASSWORD_WRONG;
+import static com.guilu.constants.ErrConstants.USER.PASSWORD_UNCHANGED;
 
 /**
  * 账号认证实现。
@@ -47,7 +52,6 @@ public class AccountServiceImpl implements AccountService {
     private static final String DUMMY_PASSWORD_HASH =
             "$2a$10$scP/ehLaVykNmHgc3PGRE./T4BfygSviT8z2myTTq9e2Bq4eljuXK";
 
-    /** sys_user.last_login_ip 为 varchar(64) */
     private static final int IP_MAX_LENGTH = 64;
 
     private static final String X_FORWARDED_FOR = "X-Forwarded-For";
@@ -118,6 +122,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public TokenPair registerUser(RegisterRequest regisUser, HttpServletRequest request) {
         if (!imageCodeService.verifyCode(regisUser.getCode(),regisUser.getCodeId())) {
             throw new UnauthorizedException(ResultInfo.Msg.INVALID_VERIFY_CODE);
@@ -138,13 +143,13 @@ public class AccountServiceImpl implements AccountService {
         sysUser.setLastLoginAt(LocalDateTime.now());
         sysUser.setLastLoginIp(resolveClientIp(request));
         sysUser.setPassword(PasswordEncoder.encode(sysUser.getPassword()));
-        Long roleId;
         try {
             userService.save(sysUser);
-            roleId = userRoleService.selectPrimaryRoleId(sysUser.getId());
+            userRoleService.bindDefaultRole(sysUser.getId());
         } catch (DuplicateKeyException e) {
             throw new BadRequestException(REGISTER_CONFLICT);
         }
+        Long roleId = userRoleService.selectPrimaryRoleId(sysUser.getId());
         LoginUserDTO userDTO = new LoginUserDTO();
         userDTO.setUserId(sysUser.getId());
         userDTO.setRememberMe(false);
@@ -160,20 +165,62 @@ public class AccountServiceImpl implements AccountService {
         return imageCodeService.createImageCode(typeEnum);
     }
 
-    private void assertNotRegistered(String username, String email) {
-        if (userService.exists(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getUsername, username))) {
-            throw new BadRequestException(USERNAME_ALREADY_EXISTS);
+    @Override
+    public void updateMyInfo(UserInfo userInfo, HttpServletRequest request) {
+        AssertUtils.isNotNull(userInfo, ResultInfo.Msg.REQUEST_PARAM_ILLEGAL);
+        UserUpdateRequest update = new UserUpdateRequest();
+        update.setId(resolveCurrentUserId(request));
+        update.setNickname(userInfo.getNickname());
+        update.setEmail(userInfo.getEmail());
+        update.setPhone(userInfo.getPhone());
+        update.setAvatarUrl(userInfo.getAvatarUrl());
+        userService.updateUser(update);
+    }
+
+    @Override
+    public void changePassword(PasswordUpdateRequest request, HttpServletRequest httpRequest) {
+        AssertUtils.isNotNull(request, ResultInfo.Msg.REQUEST_PARAM_ILLEGAL);
+        AssertUtils.isNotBlank(request.getOldPassword(), OLD_PASSWORD_REQUIRED);
+        AssertUtils.isNotBlank(request.getNewPassword(), NEW_PASSWORD_REQUIRED);
+        Long userId = resolveCurrentUserId(httpRequest);
+        SysUser user = userService.getById(userId);
+        AssertUtils.isNotNull(user, ResultInfo.Msg.USER_NOT_EXISTS);
+        if (!matches(request.getOldPassword(), user.getPassword())) {
+            throw new BadRequestException(OLD_PASSWORD_WRONG);
         }
-        if (email != null
-                && userService.exists(Wrappers.<SysUser>lambdaQuery().eq(SysUser::getEmail, email))) {
-            throw new BadRequestException(EMAIL_ALREADY_EXISTS);
+        if (matches(request.getNewPassword(), user.getPassword())) {
+            throw new BadRequestException(PASSWORD_UNCHANGED);
         }
+        // 加密交给用户服务完成，这里只传递明文，避免调用方误把明文写库
+        userService.resetPassword(userId, request.getNewPassword());
     }
 
     /**
-     * 从 access/refresh token 尽力解析当前用户，仅用于日志，失败返回 null。
-     * 注销接口在网关的排除登录列表内（token 过期也应能注销），网关注入的 user-info 头
-     * 对注销请求不存在，因此这里不能依赖 UserContext，只能从 token 自身解析身份。
+     * 解析登录用户ID
+     */
+    private Long resolveCurrentUserId(HttpServletRequest request) {
+        Long userId = UserContext.getUser();
+        if (userId != null) {
+            return userId;
+        }
+        String access = request == null ? null : request.getHeader(JwtConstants.AUTHORIZATION_HEADER);
+        String refresh = request == null ? null : request.getHeader(JwtConstants.REFRESH_HEADER);
+        userId = resolveUserId(access, refresh);
+        if (userId == null) {
+            throw new UnauthorizedException(INVALID_TOKEN);
+        }
+        return userId;
+    }
+
+    /**
+     * 唯一性校验收敛到用户服务，注册与后台「新增用户」共用同一套规则。
+     */
+    private void assertNotRegistered(String username, String email) {
+        userService.assertNotRegistered(username, email, null);
+    }
+
+    /**
+     * 从 access/refresh token 解析当前用户，仅用于日志
      */
     private Long resolveUserId(String accessToken, String refreshToken) {
         Result<LoginUserDTO> r = tokenService.verify(accessToken);
@@ -186,8 +233,6 @@ public class AccountServiceImpl implements AccountService {
 
     /**
      * 密码校验
-     * @param rawPassword --用户的密码
-     * @param passwordHash --加密密码
      */
     private boolean matches(String rawPassword, String passwordHash) {
         if (StringUtils.isBlank(passwordHash)) {
@@ -215,10 +260,6 @@ public class AccountServiceImpl implements AccountService {
         }
     }
 
-    /**
-     * 解析客户端IP：网关会追加 X-Forwarded-For，末段由本系统网关写入、客户端无法伪造，
-     * 因此取末段；无该头时回退到 TCP 对端地址。结果按列宽截断。
-     */
     private String resolveClientIp(HttpServletRequest request) {
         if (request == null) {
             return null;

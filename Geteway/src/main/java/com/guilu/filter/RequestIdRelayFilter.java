@@ -13,32 +13,41 @@ import java.util.UUID;
 
 import static com.guilu.constants.Constant.*;
 
-/***
- * 网关层请求id头转发过滤器
- */
 @Slf4j
 @Component
 public class RequestIdRelayFilter implements GlobalFilter, Ordered {
+
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        // 1.生成 RequestId
-        String requestId = UUID.randomUUID().toString();
-        // 2.保存到日志变量池
-        MDC.put(REQUEST_ID_HEADER, requestId);
-        // 3.更新请求头，添加标示
+        // 1. 优先复用上游传入的 requestId
+        String requestId = exchange.getRequest().getHeaders().getFirst(REQUEST_ID_HEADER);
+        if (requestId == null || requestId.isEmpty()) {
+            requestId = UUID.randomUUID().toString();
+        }
+
         String path = exchange.getRequest().getPath().toString();
-        exchange = exchange.mutate().request(b -> {
-                    // 3.1.添加请求id标示
-                    b.header(REQUEST_ID_HEADER, requestId);
-                    // 3.2.添加网关标示
-                    if (!path.startsWith("/gw/notify")) {
-                        b.header(REQUEST_FROM_HEADER, GATEWAY_ORIGIN_NAME);
-                    }
-                }
-        ).build();
-        log.info("添加请求Id.......");
-        return chain.filter(exchange);
+        final String finalRequestId = requestId;
+
+        // 2. 响应里也带上 requestId，便于前端排查
+        exchange.getResponse().getHeaders().add(REQUEST_ID_HEADER, finalRequestId);
+
+        // 3. 改写请求头
+        ServerWebExchange mutated = exchange.mutate().request(b -> {
+            b.header(REQUEST_ID_HEADER, finalRequestId);
+            if (!path.startsWith(NOTIFY_PATH_PREFIX)) {
+                b.header(REQUEST_FROM_HEADER, GATEWAY_ORIGIN_NAME);
+            }
+        }).build();
+
+//        if (log.isDebugEnabled()) {
+//            log.debug("gateway relay requestId = {}, path = {}", finalRequestId, path);
+//        }
+
+        // 4. 写入 Reactor Context，供下游 filter / 日志框架使用
+        return chain.filter(mutated)
+                .contextWrite(ctx -> ctx.put(REQUEST_ID_HEADER, finalRequestId));
     }
+
     @Override
     public int getOrder() {
         return Ordered.HIGHEST_PRECEDENCE;

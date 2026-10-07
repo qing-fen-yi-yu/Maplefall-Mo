@@ -2,15 +2,34 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.guilu.mapper.SysUserRoleMapper">
 
+    <!--
+      ur.deleted = 0 必须显式写：手写 XML 不会被 MyBatis-Plus 自动追加逻辑删除条件。
+      少了这个条件，已经解绑（deleted = 1）的映射仍会被解析成 token 里的角色。
+    -->
     <select id="selectPrimaryRoleId" resultType="java.lang.Long">
         SELECT r.id
         FROM sys_user_role ur
                  INNER JOIN sys_role r ON r.id = ur.role_id
         WHERE ur.user_id = #{userId}
+          AND ur.deleted = 0
           AND r.deleted = 0
           AND r.status = 1
         ORDER BY r.sort ASC, r.id ASC
         LIMIT 1
     </select>
+
+    <insert id="upsertUserRole">
+        INSERT INTO sys_user_role (id, user_id, role_id, deleted)
+        VALUES (#{id}, #{userId}, #{roleId}, 0)
+        ON DUPLICATE KEY UPDATE deleted = 0
+    </insert>
+
+    <update id="softDeleteOtherRoles">
+        UPDATE sys_user_role
+        SET deleted = 1
+        WHERE user_id = #{userId}
+          AND role_id &lt;&gt; #{keepRoleId}
+          AND deleted = 0
+    </update>
 
 </mapper>

@@ -57,10 +57,11 @@ fl:
     resource:
       enable: true
       exclude-login-paths:
-        - "user/maple/user/login"
-        - "user/maple/user/refresh"
-        - "user/maple/user/logout"
-        - "admin/account/login"   # 管理端尚未实现，先留占位
+        - "maple/user/login"
+        - "maple/user/refresh"
+        - "maple/user/logout"
+        - "maple/user/register"
+        - "maple/user/applyCode"
 monitor:
   threadpool:
     dynamic:

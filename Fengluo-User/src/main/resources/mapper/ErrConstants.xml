@@ -9,14 +9,16 @@
       因此 permission 里要写 GET:/user/sys-role/list 或 *:/user/sys-role/** 这类可被 AntPathMatcher 匹配的值。
 
       deleted = 0 必须显式写：MyBatis-Plus 的逻辑删除只作用于 BaseMapper/Wrapper 生成的 SQL，
-      手写 XML 不会被自动追加逻辑删除条件。
+      手写 XML 不会被自动追加逻辑删除条件。三张表的 deleted 都要判：
+      漏掉 rm.deleted = 0 会让「取消角色授权」删除的绑定仍然参与聚合，
+      表现为已经摘掉的权限依旧被网关放行。
     -->
     <select id="selectPrivileges" resultType="com.guilu.domain.dto.PrivilegePathRow">
         SELECT m.id         AS menuId,
                m.permission AS permission,
                rm.role_id   AS roleId
         FROM sys_menu m
-                 INNER JOIN sys_role_menu rm ON rm.menu_id = m.id
+                 INNER JOIN sys_role_menu rm ON rm.menu_id = m.id AND rm.deleted = 0
                  INNER JOIN sys_role r ON r.id = rm.role_id
         WHERE m.deleted = 0
           AND m.status = 1

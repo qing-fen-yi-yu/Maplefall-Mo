@@ -6,7 +6,7 @@ public interface Constant {
 
     String GATEWAY_ORIGIN_NAME = "gateway";
     String FEIGN_ORIGIN_NAME = "feign";
-
+    String NOTIFY_PATH_PREFIX = "/gw/notify";
     // 数据字段 - id
     String DATA_FIELD_NAME_ID = "id";
 
