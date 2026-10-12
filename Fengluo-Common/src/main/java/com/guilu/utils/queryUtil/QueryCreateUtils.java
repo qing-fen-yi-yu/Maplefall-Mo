@@ -6,12 +6,9 @@ import com.guilu.exception.BusinessException.CommonException;
 import com.guilu.utils.queryUtil.annotations.FieldQuery;
 
 import java.lang.reflect.Field;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.function.Predicate;
 
-public class QueryCreateUtils<T> {
+public class QueryCreateUtils<T> extends  DefaultCreateUtils<T>{
 
     public QueryWrapper<T> generateQueryWrapper(Object tar) {
         QueryWrapper<T> qw = new QueryWrapper<>();
@@ -33,38 +30,6 @@ public class QueryCreateUtils<T> {
         }
         return qw;
     }
-    //todo 默认Wrapper生成器
-    public QueryWrapper<T> generateDefaultValueWrapper(Object tar){
-        return  generateQueryWrapper(tar);
-    }
-
-    private String toFiled(String name) {
-        if (name == null || name.isEmpty()) return name;
-
-        StringBuilder sb = new StringBuilder(name.length() + 8);
-        char[] chars = name.toCharArray();
-
-        for (int i = 0; i < chars.length; i++) {
-            char c = chars[i];
-            if (Character.isUpperCase(c)) {
-                //前一个是小写/数字 -> 直接插
-                //前一个是大写、后一个是小写
-                boolean prevExists     = i > 0;
-                boolean prevNotUpper   = prevExists && !Character.isUpperCase(chars[i - 1]);
-                boolean nextIsLower    = (i + 1 < chars.length) && Character.isLowerCase(chars[i + 1]);
-                boolean prevIsUpper    = prevExists && Character.isUpperCase(chars[i - 1]);
-
-                if (prevExists && (prevNotUpper || (prevIsUpper && nextIsLower))) {
-                    sb.append('_');
-                }
-                sb.append(Character.toLowerCase(c));
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
     private QueryWrapper<T> byType(QueryType type, String[] fields,
                                    QueryWrapper<T> qw, Field field, Object tar) {
         Object val;
@@ -122,11 +87,9 @@ public class QueryCreateUtils<T> {
                 case BETWEEN:
                 case NOT_BETWEEN:
                     // 值非 null 但形状不对属于调用方写错注解，直接报错而不是静默忽略
-                    if (!(val instanceof Object[]) || ((Object[]) val).length != 2) {
-                        throw new BadDataException(
-                                "@FieldQuery BETWEEN/NOT_BETWEEN 字段 [" + f + "] 需要长度=2的数组");
+                    if (!(val instanceof Object[] range) || range.length != 2) {
+                        throw new BadDataException("between类型需要值数量等于2");
                     }
-                    Object[] range = (Object[]) val;
                     if (type == QueryType.BETWEEN) {
                         qw.between(f, range[0], range[1]);
                     } else {
@@ -142,12 +105,7 @@ public class QueryCreateUtils<T> {
     private Collection<?> toCollection(Object val) {
         if (val instanceof Collection) return (Collection<?>) val;
         if (val.getClass().isArray()) {
-            int len = java.lang.reflect.Array.getLength(val);
-            java.util.List<Object> list = new java.util.ArrayList<>(len);
-            for (int i = 0; i < len; i++) {
-                list.add(java.lang.reflect.Array.get(val, i));
-            }
-            return list;
+            return getObjects(val);
         }
         throw new CommonException("无法转换为集合: " + val.getClass());
     }
