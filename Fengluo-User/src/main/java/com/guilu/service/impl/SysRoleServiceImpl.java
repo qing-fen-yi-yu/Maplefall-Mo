@@ -165,7 +165,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
             // 直接删会让已绑定的用户静默失去角色，先要求人工解绑
             throw new BadRequestException(ROLE_IN_USE);
         }
-        roleMenuMapper.softDeleteByRoleId(id);
+        roleMenuMapper.deleteByRoleId(id);
         removeById(id);
     }
 
@@ -192,7 +192,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
                         .collect(Collectors.toList());
         assertMenusExist(menuIds);
         // 全量覆盖：先摘掉不在集合里的旧授权（空集合即清空），再把集合内的绑定复活/新建
-        roleMenuMapper.softDeleteNotIn(roleId, menuIds);
+        roleMenuMapper.deleteNotIn(roleId, menuIds);
         for (Long menuId : menuIds) {
             roleMenuMapper.upsertRoleMenu(IdWorker.getId(), roleId, menuId);
         }
@@ -203,7 +203,7 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
     public void clearMenus(Long roleId) {
         AssertUtils.isNotNull(roleId, ID_REQUIRED);
         AssertUtils.isNotNull(getById(roleId), ROLE_NOT_EXISTS);
-        roleMenuMapper.softDeleteByRoleId(roleId);
+        roleMenuMapper.deleteByRoleId(roleId);
     }
 
     @Override

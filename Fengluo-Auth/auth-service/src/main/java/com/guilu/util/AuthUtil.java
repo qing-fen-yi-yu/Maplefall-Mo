@@ -74,11 +74,14 @@ public class AuthUtil {
     public void checkAuth(String antPath, Result<LoginUserDTO> r) {
         // 0.确保本地权限缓存是最新的
         refreshPrivileges();
+        // 只有显式登录白名单允许匿名；权限配置为空或缺失不能自动放行。
+        if (!r.isLoginStatus()) {
+            throw new UnauthorizedException(r.getMessage(), r.getCode());
+        }
         // 1.判断是否是需要权限的路径
         String matchPath = findMatchPath(antPath);
         if(matchPath == null){
-            // 没有权限限制，直接放行
-            return;
+            throw new ForbiddenException(FORBIDDEN);
         }
         // 2.判断是否登录成功
         if(!r.isLoginStatus()){

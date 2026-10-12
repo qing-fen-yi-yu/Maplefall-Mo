@@ -43,6 +43,7 @@ public class AuthMetadataResolver {
 
     @EventListener(HeartbeatEvent.class)
     public void onHeartbeat(HeartbeatEvent event) {
+        log.info("网关层路径拦截配置更新");
         refresh();
     }
 
@@ -67,7 +68,6 @@ public class AuthMetadataResolver {
         }
         this.excludePaths = PathUtil.normalize(excludes);
         this.includePaths = PathUtil.normalize(includes);
-        log.debug("网关鉴权路径元数据刷新完成, exclude={}, include={}", excludePaths, includePaths);
     }
 
     private void collect(String value, Set<String> target) {

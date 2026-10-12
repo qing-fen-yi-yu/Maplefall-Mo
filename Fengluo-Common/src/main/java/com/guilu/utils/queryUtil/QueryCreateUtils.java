@@ -6,7 +6,10 @@ import com.guilu.exception.BusinessException.CommonException;
 import com.guilu.utils.queryUtil.annotations.FieldQuery;
 
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
 
 public class QueryCreateUtils<T> {
 
@@ -29,6 +32,10 @@ public class QueryCreateUtils<T> {
             }
         }
         return qw;
+    }
+    //todo 默认Wrapper生成器
+    public QueryWrapper<T> generateDefaultValueWrapper(Object tar){
+        return  generateQueryWrapper(tar);
     }
 
     private String toFiled(String name) {

@@ -15,4 +15,7 @@ public class GlobalException extends RuntimeException {
         super(message);
         this.code = code;
     }
+    public GlobalException(String message,Throwable cause) {
+        super(message,cause);
+    }
 }

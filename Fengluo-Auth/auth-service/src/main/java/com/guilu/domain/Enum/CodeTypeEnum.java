@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public enum CodeTypeEnum  {
     LINECAPTCHA("line",1),CIRCLECAPTCHA("circle",2),SHEARCAPTCHA("shear",3);
-    private String type;
+    private final String type;
     @JsonValue
-    private Integer typeId;
+    private final Integer typeId;
 
     CodeTypeEnum(String type, Integer id) {
         this.type = type;

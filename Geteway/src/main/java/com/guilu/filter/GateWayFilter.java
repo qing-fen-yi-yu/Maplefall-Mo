@@ -29,8 +29,7 @@ public class GateWayFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String path = exchange.getRequest().getPath().toString();
-        log.info("当前请求路径+{}",path);
-        // 1.命中白名单路径，直接放行
+          // 1.命中白名单路径，直接放行
         if (PathUtil.isPath(path, pathMatcher, authProperties.resolveGatewayExclude())) {
             return chain.filter(exchange);
         }

@@ -69,7 +69,7 @@ public class AccountServiceImpl implements AccountService {
                 || StringUtils.isBlank(request.getPassword())) {
             throw new UnauthorizedException(LOGIN_FAILED);
         }
-        if (vailUserCode(request.getCode(),request.getCodeId())){
+        if (!vailUserCode(request.getCode(),request.getCodeId())){
             throw new UnauthorizedException("验证码错误");
         }
         // 2.查询用户
@@ -195,6 +195,28 @@ public class AccountServiceImpl implements AccountService {
         userService.resetPassword(userId, request.getNewPassword());
     }
 
+    @Override
+    public Long getUserId(HttpServletRequest request) {
+        Long userId = UserContext.getUser();
+        if(userId == null){
+            userId = resolveUserId(
+                    request.getHeader(JwtConstants.AUTHORIZATION_HEADER)
+                    ,request.getHeader(JwtConstants.REFRESH_HEADER));
+        }
+        return userId;
+    }
+
+    @Override
+    public Long getRoleId(HttpServletRequest request) {
+        Long roleId = resolveRoleId(request.getHeader(JwtConstants.AUTHORIZATION_HEADER)
+                , request.getHeader(JwtConstants.REFRESH_HEADER));
+        if(roleId == null){
+            Long userId = getUserId(request);
+            roleId = userRoleService.selectPrimaryRoleId(userId);
+        }
+        return  roleId;
+    }
+
     /**
      * 解析登录用户ID
      */
@@ -229,6 +251,14 @@ public class AccountServiceImpl implements AccountService {
         }
         r = tokenService.verify(refreshToken);
         return r.isLoginStatus() ? r.getData().getUserId() : null;
+    }
+    private Long resolveRoleId(String accessToken, String refreshToken) {
+        Result<LoginUserDTO> r = tokenService.verify(accessToken);
+        if (r.isLoginStatus()) {
+            return r.getData().getRoleId();
+        }
+        r = tokenService.verify(refreshToken);
+        return r.isLoginStatus() ? r.getData().getRoleId() : null;
     }
 
     /**

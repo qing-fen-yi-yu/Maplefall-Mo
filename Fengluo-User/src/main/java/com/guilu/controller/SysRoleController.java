@@ -79,7 +79,7 @@ public class SysRoleController {
         return Result.success(roleService.listMenuIds(roleId));
     }
 
-    @ApiOperation("保存角色授权（全量覆盖，空集合表示清空）")
+    @ApiOperation("保存角色授权")
     @PutMapping("/menu")
     public Result<Void> replaceMenus(@RequestBody RoleMenuRequest roleMenuRequest) {
         roleService.replaceMenus(roleMenuRequest);

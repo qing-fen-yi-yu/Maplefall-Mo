@@ -17,6 +17,9 @@
         ORDER BY r.sort ASC, r.id ASC
         LIMIT 1
     </select>
+    <select id="getRoleById" resultType="java.lang.Long">
+        SELECT role_id from sys_user_role where user_id = #{userId} and deleted != 0;
+    </select>
 
     <insert id="upsertUserRole">
         INSERT INTO sys_user_role (id, user_id, role_id, deleted)

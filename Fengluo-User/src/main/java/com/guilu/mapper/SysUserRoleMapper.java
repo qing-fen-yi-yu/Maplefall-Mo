@@ -47,4 +47,6 @@ public interface SysUserRoleMapper extends BaseMapper<SysUserRole> {
      */
     int softDeleteOtherRoles(@Param("userId") Long userId,
                              @Param("keepRoleId") Long keepRoleId);
+
+    Long getRoleById(@Param("userId") Long userId);
 }

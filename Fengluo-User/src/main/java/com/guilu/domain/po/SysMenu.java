@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
 import java.io.Serializable;
+
+import com.guilu.enums.MenuType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.experimental.Accessors;
@@ -25,9 +27,6 @@ public class SysMenu implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    /**
-     * ID
-     */
     @TableId(value = "id", type = IdType.ASSIGN_ID)
     private Long id;
 
@@ -39,7 +38,7 @@ public class SysMenu implements Serializable {
     /**
      * 目录、菜单、按钮
      */
-    private String type;
+    private MenuType type;
 
     /**
      * 菜单或权限名称
@@ -95,6 +94,4 @@ public class SysMenu implements Serializable {
      * 0未删除，1已删除
      */
     private Integer deleted;
-
-
 }

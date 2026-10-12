@@ -4,6 +4,7 @@ import com.guilu.domain.Result;
 import com.guilu.exception.GlobalException;
 import com.guilu.exception.RequestException.ForbiddenException;
 import com.guilu.exception.RequestException.UnauthorizedException;
+import com.guilu.exceptionHandler.annotations.GlobalChainHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,7 @@ import static com.guilu.constants.ResultInfo.Code.FAILED;
  */
 @Slf4j
 @RestControllerAdvice
+@GlobalChainHandler
 public class UserExceptionHandler {
 
     @ExceptionHandler(UnauthorizedException.class)

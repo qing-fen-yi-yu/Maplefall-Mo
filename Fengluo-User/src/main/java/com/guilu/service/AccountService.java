@@ -59,4 +59,8 @@ public interface AccountService {
      * @param httpRequest 用于在 UserContext 缺失时从 token 头解析当前用户
      */
     void changePassword(PasswordUpdateRequest request, HttpServletRequest httpRequest);
+
+    Long getUserId(HttpServletRequest request);
+
+    Long getRoleId(HttpServletRequest request);
 }

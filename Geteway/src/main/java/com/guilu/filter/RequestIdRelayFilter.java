@@ -24,7 +24,7 @@ public class RequestIdRelayFilter implements GlobalFilter, Ordered {
         if (requestId == null || requestId.isEmpty()) {
             requestId = UUID.randomUUID().toString();
         }
-
+        log.info("添加请求头：{}",requestId);
         String path = exchange.getRequest().getPath().toString();
         final String finalRequestId = requestId;
 

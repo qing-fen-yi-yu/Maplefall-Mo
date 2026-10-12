@@ -48,11 +48,6 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
         String message;
         int code = FAILED;
         if (ex instanceof UnLoginException) {
-            // 未登录：与 UnauthorizedException 一样返回 401。
-            // 这里不能写 Mono.error(new ResponseStatusException(e.getCode(), ...))：
-            // e.getCode() 是业务码（如 40102），不是合法的 HTTP 状态码；
-            // 且在异常处理器内部再次抛错会让本处理器「处理失败」，
-            // 而它已经是最后一个 ErrorWebExceptionHandler，最终只会退化成 500。
             UnLoginException e = (UnLoginException) ex;
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             code = e.getCode() == null ? HttpStatus.UNAUTHORIZED.value() : e.getCode();
@@ -70,14 +65,20 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
             code = HttpStatus.FORBIDDEN.value();
             message = e.getMessage();
         } else if (ex instanceof CommonException) {
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
             CommonException e = (CommonException) ex;
             code = e.getCode() == null ? FAILED : e.getCode();
             message = e.getMessage();
         } else if (ex instanceof NotFoundException) {
+            response.setStatusCode(((NotFoundException) ex).getStatusCode());
+            code = ((NotFoundException) ex).getStatusCode().value();
             message = "服务不存在";
         } else if (ex instanceof ResponseStatusException) {
+            response.setStatusCode(((ResponseStatusException) ex).getStatusCode());
+            code = ((ResponseStatusException) ex).getStatusCode().value();
             message = ex.getMessage();
         } else {
+            response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
             message = SERVER_INTER_ERROR;
             // 4.记录日志
             writeLog(exchange, ex);

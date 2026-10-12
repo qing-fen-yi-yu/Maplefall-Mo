@@ -18,6 +18,7 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Component;
 
 import java.awt.*;
+import java.time.Duration;
 import java.util.concurrent.CompletableFuture;
 
 @Component
@@ -25,8 +26,8 @@ import java.util.concurrent.CompletableFuture;
 public class ImageCodeService {
     private final StringRedisTemplate redisTemplate;
     public boolean verifyCode(String code,String Id) {
-        if(code.isBlank() || Id.isBlank()){
-            throw new CommonException("数据校验错误");
+        if(code == null || Id == null || code.isBlank() || Id.isBlank()){
+            return false;
         }
         ValueOperations<String, String> operations = redisTemplate.opsForValue();
         String vail = operations.getAndDelete(JwtConstants.IMAGE_CODE_KEY + Id);
@@ -37,9 +38,8 @@ public class ImageCodeService {
     }
     private Long saveCode(String code){
         Long id = new Snowflake().nextId();
-        CompletableFuture.runAsync(() -> {
-            redisTemplate.opsForValue().set(JwtConstants.IMAGE_CODE_KEY+id,code);
-        });
+        // 返回验证码 ID 前完成保存，避免立即登录时验证码还未写入；五分钟后过期。
+        redisTemplate.opsForValue().set(JwtConstants.IMAGE_CODE_KEY+id,code, Duration.ofMinutes(5));
         if(ObjectUtils.hasNull(id)){
             throw new BadDataException();
         }
@@ -63,7 +63,7 @@ public class ImageCodeService {
             if (ObjectUtils.hasNull(captcha)) {
                 throw new BadRequestException("验证码生成失败");
             }
-            imageCodeVO.setImage(captcha.getImage());
+            imageCodeVO.setImage("data:image/png;base64," + captcha.getImageBase64());
             String code = captcha.getCode();
             Long id = saveCode(code);
             imageCodeVO.setId(id);
