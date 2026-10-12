@@ -1,6 +1,7 @@
 package com.guilu.utils.queryUtil;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.guilu.exception.BusinessException.CommonException;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -77,7 +78,7 @@ public class DefaultCreateUtils<T>{
             return;
         }
         if (value.getClass().isArray()) {
-            qw.in(col, toList(value));
+            qw.in(col, toCollection(value));
             return;
         }
         if (LIKE_TYPES.contains(type)) {
@@ -115,10 +116,13 @@ public class DefaultCreateUtils<T>{
         return false;
     }
 
-    private List<Object> toList(Object array) {
-        return getObjects(array);
+    protected Collection<?> toCollection(Object val) {
+        if (val instanceof Collection) return (Collection<?>) val;
+        if (val.getClass().isArray()) {
+            return getObjects(val);
+        }
+        throw new CommonException("无法转换为集合: " + val.getClass());
     }
-
     static List<Object> getObjects(Object array) {
         int len = Array.getLength(array);
         List<Object> list = new java.util.ArrayList<>(len);
@@ -143,7 +147,7 @@ public class DefaultCreateUtils<T>{
             char c = chars[i];
             if (Character.isUpperCase(c)) {
                 //前一个是小写/数字 -> 直接插
-                //前一个是大写、后一个是小写
+                //前一个是大写后一个是小写
                 boolean prevExists   = i > 0;
                 boolean prevNotUpper = prevExists && !Character.isUpperCase(chars[i - 1]);
                 boolean nextIsLower  = (i + 1 < chars.length) && Character.isLowerCase(chars[i + 1]);

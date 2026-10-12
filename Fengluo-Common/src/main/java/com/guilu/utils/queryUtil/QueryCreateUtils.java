@@ -2,7 +2,6 @@ package com.guilu.utils.queryUtil;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.guilu.exception.BusinessException.BadDataException;
-import com.guilu.exception.BusinessException.CommonException;
 import com.guilu.utils.queryUtil.annotations.FieldQuery;
 
 import java.lang.reflect.Field;
@@ -40,8 +39,6 @@ public class QueryCreateUtils<T> extends  DefaultCreateUtils<T>{
         }
 
         for (String f : fields) {
-            // 查询条件都是可选的：值为 null 表示调用方没有指定该条件，跳过即可。
-            // IS_NULL / IS_NOT_NULL 本身不取值，val 为 null 时依然要生效。
             if (val == null
                     && type != QueryType.IS_NULL
                     && type != QueryType.IS_NOT_NULL) {
@@ -100,13 +97,5 @@ public class QueryCreateUtils<T> extends  DefaultCreateUtils<T>{
             }
         }
         return qw;
-    }
-
-    private Collection<?> toCollection(Object val) {
-        if (val instanceof Collection) return (Collection<?>) val;
-        if (val.getClass().isArray()) {
-            return getObjects(val);
-        }
-        throw new CommonException("无法转换为集合: " + val.getClass());
     }
 }
