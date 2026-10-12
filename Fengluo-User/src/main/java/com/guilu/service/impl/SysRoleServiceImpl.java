@@ -10,6 +10,7 @@ import com.guilu.domain.dto.update.RoleUpdateRequest;
 import com.guilu.domain.po.SysRole;
 import com.guilu.domain.po.SysUserRole;
 import com.guilu.domain.query.QueryPage;
+import com.guilu.dto.Auth.Role;
 import com.guilu.exception.BusinessException.CommonException;
 import com.guilu.exception.RequestException.BadRequestException;
 import com.guilu.mapper.SysMenuMapper;
@@ -20,6 +21,7 @@ import com.guilu.service.ISysRoleService;
 import com.guilu.service.PrivilegeService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.guilu.utils.AssertUtils;
+import com.guilu.utils.BeanUtils;
 import com.guilu.utils.CollUtils;
 import com.guilu.utils.StringUtils;
 import com.guilu.utils.queryUtil.QueryCreateUtils;
@@ -221,6 +223,11 @@ public class SysRoleServiceImpl extends ServiceImpl<SysRoleMapper, SysRole> impl
             log.error("权限缓存发布失败", e);
             throw new CommonException(PRIVILEGE_PUBLISH_FAILED);
         }
+    }
+
+    @Override
+    public List<Role> getDetailByIds(List<Long> ids) {
+        return BeanUtils.copyList(lambdaQuery().in(SysRole::getId,ids).list(),Role.class);
     }
 
     /**

@@ -9,6 +9,7 @@ import com.guilu.domain.dto.update.StatusUpdateRequest;
 import com.guilu.domain.dto.update.UserCreateRequest;
 import com.guilu.domain.dto.update.UserUpdateRequest;
 import com.guilu.domain.po.SysUser;
+import com.guilu.dto.Auth.User;
 import com.guilu.service.ISysUserService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -82,5 +83,10 @@ public class SysUserController {
     public Result<Void> delUser(@RequestParam Long id) {
         userService.removeById(id);
         return Result.success();
+    }
+    @GetMapping("/detail")
+    @ApiOperation("批量查询用户")
+    public Result<List<User>> queryUserDetailByUserIds(List<Long> userIds){
+        return Result.success(userService.getDetailByIds(userIds));
     }
 }

@@ -6,6 +6,7 @@ import com.guilu.domain.dto.query.RoleQuery;
 import com.guilu.domain.dto.update.RoleUpdateRequest;
 import com.guilu.domain.po.SysRole;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.guilu.dto.Auth.Role;
 
 import java.util.List;
 
@@ -57,4 +58,6 @@ public interface ISysRoleService extends IService<SysRole> {
      * </p>
      */
     void publishPrivileges();
+
+    List<Role> getDetailByIds(List<Long> ids);
 }

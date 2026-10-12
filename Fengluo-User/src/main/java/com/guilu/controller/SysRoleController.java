@@ -8,6 +8,7 @@ import com.guilu.domain.dto.query.RoleQuery;
 import com.guilu.domain.dto.update.RoleUpdateRequest;
 import com.guilu.domain.dto.update.StatusUpdateRequest;
 import com.guilu.domain.po.SysRole;
+import com.guilu.dto.Auth.Role;
 import com.guilu.service.ISysRoleService;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
@@ -100,5 +101,10 @@ public class SysRoleController {
     public Result<Void> republishPrivileges() {
         roleService.publishPrivileges();
         return Result.success();
+    }
+
+    @GetMapping("/detail")
+    public Result<List<Role>> getDetailByIds(List<Long>  ids){
+        return Result.success(roleService.getDetailByIds(ids));
     }
 }

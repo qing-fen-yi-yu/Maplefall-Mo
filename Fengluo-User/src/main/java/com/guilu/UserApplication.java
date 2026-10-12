@@ -25,6 +25,7 @@ public class UserApplication {
                         "Application '{}' is running! Access URLs:\n\t" +
                         "Local: \t\t{}://localhost:{}\n\t" +
                         "External: \t{}://{}:{}\n\t" +
+                        "ManagementPoint:\t{}"+
                         "Profile(s): \t{}" +
                         "\n---------------------------------------------------------------------------------------",
                 env.getProperty("spring.application.name"),
@@ -33,6 +34,7 @@ public class UserApplication {
                 protocol,
                 InetAddress.getLocalHost().getHostAddress(),
                 env.getProperty("server.port"),
+                env.getProperty("management.endpoints.web.exposure.include"),
                 env.getActiveProfiles());
     }
 }

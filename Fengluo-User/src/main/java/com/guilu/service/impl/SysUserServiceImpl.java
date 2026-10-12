@@ -1,6 +1,7 @@
 package com.guilu.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.TableFieldInfo;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.guilu.constants.ResultInfo;
@@ -9,6 +10,7 @@ import com.guilu.domain.dto.update.UserCreateRequest;
 import com.guilu.domain.dto.update.UserUpdateRequest;
 import com.guilu.domain.po.SysUser;
 import com.guilu.domain.query.QueryPage;
+import com.guilu.dto.Auth.User;
 import com.guilu.exception.GlobalException;
 import com.guilu.exception.RequestException.BadRequestException;
 import com.guilu.mapper.SysUserMapper;
@@ -30,6 +32,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.function.Predicate;
 
 import static com.guilu.constants.ErrConstants.ACCOUNT.EMAIL_ALREADY_EXISTS;
 import static com.guilu.constants.ErrConstants.ACCOUNT.REGISTER_CONFLICT;
@@ -193,6 +196,18 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
             }
             removeById(id);
         }
+    }
+
+    @Override
+    public List<User> getDetailByIds(List<Long> userIds) {
+        return BeanUtils.copyList(
+                lambdaQuery().select(SysUser.class,
+                        tableFieldInfo ->
+                                !tableFieldInfo.getColumn().equals("password_hash"))
+                .in(SysUser::getId, userIds)
+                .eq(SysUser::getDeleted, 0).list()
+                , User.class
+        );
     }
 
     /**

@@ -66,7 +66,6 @@ public class SysUserRoleServiceImpl extends ServiceImpl<SysUserRoleMapper, SysUs
     public void assignRole(Long userId, Long roleId) {
         AssertUtils.isNotNull(userId, "用户ID禁止为空");
         assertRoleAssignable(roleId);
-        // 单角色模型：先摘掉该用户的其它角色，再绑定目标角色
         baseMapper.softDeleteOtherRoles(userId, roleId);
         baseMapper.upsertUserRole(IdWorker.getId(), userId, roleId);
     }

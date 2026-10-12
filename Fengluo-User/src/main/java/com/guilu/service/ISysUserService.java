@@ -6,6 +6,7 @@ import com.guilu.domain.dto.update.UserCreateRequest;
 import com.guilu.domain.dto.update.UserUpdateRequest;
 import com.guilu.domain.po.SysUser;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.guilu.dto.Auth.User;
 
 import java.util.List;
 
@@ -63,4 +64,6 @@ public interface ISysUserService extends IService<SysUser> {
      * 批量删除用户，连同其角色映射一起逻辑删除。
      */
     void removeBatch(List<Long> ids);
+
+    List<User> getDetailByIds(List<Long> userIds);
 }
