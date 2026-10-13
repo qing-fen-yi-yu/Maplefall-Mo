@@ -25,7 +25,7 @@ public class UserApplication {
                         "Application '{}' is running! Access URLs:\n\t" +
                         "Local: \t\t{}://localhost:{}\n\t" +
                         "External: \t{}://{}:{}\n\t" +
-                        "ManagementPoint:\t{}"+
+                        "ManagementPoint:\t{}\n"+
                         "Profile(s): \t{}" +
                         "\n---------------------------------------------------------------------------------------",
                 env.getProperty("spring.application.name"),
