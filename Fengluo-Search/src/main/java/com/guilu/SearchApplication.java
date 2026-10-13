@@ -14,25 +14,31 @@ import java.net.UnknownHostException;
 @Slf4j
 @SpringBootApplication
 public class SearchApplication {
-    public static void main(String[] args) throws UnknownHostException {
+    public static void main(String[] args) {
         SpringApplicationBuilder app = new SpringApplicationBuilder(SearchApplication.class);
         Environment env = app.run(args).getEnvironment();
         String protocol = "http";
         if (env.getProperty("server.ssl.key-store") != null) {
             protocol = "https";
         }
-        log.info("--/\n---------------------------------------------------------------------------------------\n\t" +
-                        "Application '{}' is running! Access URLs:\n\t" +
-                        "Local: \t\t{}://localhost:{}\n\t" +
-                        "External: \t{}://{}:{}\n\t" +
-                        "Profile(s): \t{}" +
-                        "\n---------------------------------------------------------------------------------------",
-                env.getProperty("spring.application.name"),
-                protocol,
-                env.getProperty("server.port"),
-                protocol,
-                InetAddress.getLocalHost().getHostAddress(),
-                env.getProperty("server.port"),
-                env.getActiveProfiles());
+        try {
+            log.info("--/\n---------------------------------------------------------------------------------------\n\t" +
+                            "Application '{}' is running! Access URLs:\n\t" +
+                            "Local: \t\t{}://localhost:{}\n\t" +
+                            "External: \t{}://{}:{}\n\t" +
+                            "ManagementPoint:\t{}\n"+
+                            "Profile(s): \t{}" +
+                            "\n---------------------------------------------------------------------------------------",
+                    env.getProperty("spring.application.name"),
+                    protocol,
+                    env.getProperty("server.port"),
+                    protocol,
+                    InetAddress.getLocalHost().getHostAddress(),
+                    env.getProperty("server.port"),
+                    env.getProperty("management.endpoints.web.exposure.include"),
+                    env.getActiveProfiles());
+        } catch (UnknownHostException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

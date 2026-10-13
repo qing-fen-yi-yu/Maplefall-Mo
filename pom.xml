@@ -26,6 +26,7 @@
         <module>Fengluo-Task</module>
         <module>Fengluo-Search</module>
         <module>Fengluo-Observability-Starter</module>
+        <module>Fengluo-Config</module>
     </modules>
 
     <properties>

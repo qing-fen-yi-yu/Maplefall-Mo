@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-@FeignClient(name = "UserApplication" ,fallbackFactory = RoleClientFallback.class)
+@FeignClient(name = "role-service" ,fallbackFactory = RoleClientFallback.class)
 public interface RoleClient {
     @GetMapping("/detail")
     public Result<List<Role>> getDetailByIds(List<Long>  ids);
