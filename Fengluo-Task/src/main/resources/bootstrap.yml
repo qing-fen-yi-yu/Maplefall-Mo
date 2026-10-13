@@ -13,7 +13,6 @@ spring:
   cloud:
     nacos:
       config:
-        server-addr: 127.0.0.1:8848
         namespace: d287a4e1-225a-4254-bd10-947bc27f15de  # 共享配置所在命名空间 Fengluo
         file-extension: yaml
         shared-configs: # 共享配置
@@ -33,7 +32,7 @@ spring:
     active: dev
 fl:
   redis:
-    host: 127.0.0.1  # Redis地址
+    host: 120.26.2.254 # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -41,14 +40,14 @@ fl:
       min-idle: 1
       max-wait: 300
   mysql:
-    host: 127.0.0.1
+    host: 120.26.2.254
     port: 3306
-    database: fl_auth
-    username: root
+    database: fl_task
+    username: guilu
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
-    host: localhost
+    host: 120.26.2.254
     port: 5672
     vhost: /maplefall
     username: guilu
