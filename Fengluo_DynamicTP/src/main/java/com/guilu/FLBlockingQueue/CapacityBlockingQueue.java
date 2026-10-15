@@ -1,4 +1,4 @@
-package com.guilu.threadPool;
+package com.guilu.FLBlockingQueue;
 
 import com.guilu.exception.BusinessException.ThreadPoolException;
 import lombok.extern.slf4j.Slf4j;

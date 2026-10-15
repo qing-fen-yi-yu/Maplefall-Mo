@@ -2,6 +2,7 @@ package com.guilu.config;
 
 import com.guilu.client.Auth.fallback.RoleClientFallback;
 import com.guilu.client.Auth.fallback.UserClientFallback;
+import com.guilu.client.TpConfig.fallback.TPConfigFallback;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -11,5 +12,8 @@ public class FallbackConfig {
     }
     public RoleClientFallback roleClientFallback(){
         return new RoleClientFallback();
+    }
+    public TPConfigFallback tpConfigFallback(){
+        return new TPConfigFallback();
     }
 }

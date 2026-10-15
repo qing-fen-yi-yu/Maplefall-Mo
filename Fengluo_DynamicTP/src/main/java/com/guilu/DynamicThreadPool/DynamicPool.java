@@ -1,14 +1,16 @@
-package com.guilu.threadPool;
+package com.guilu.DynamicThreadPool;
 
+import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.guilu.FLBlockingQueue.CapacityBlockingQueue;
+import com.guilu.FLDynamicReject.DynamicRejectHandler;
 import com.guilu.domain.po.ThreadPool.TaskPoolConfig;
-import com.guilu.exception.BusinessException.ThreadPoolException;
+import com.guilu.exception.BusinessException.BadDataException;
 import org.springframework.util.StringUtils;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
-
-import static cn.hutool.core.thread.ThreadUtil.createThreadFactory;
 
 public class DynamicPool extends ThreadPoolExecutor {
     private final Long threadId;
@@ -33,7 +35,7 @@ public class DynamicPool extends ThreadPoolExecutor {
                 taskPoolConfig.getKeepAliveTime(),
                 creatTimeUnit(taskPoolConfig.getTimeUnit()),
                 createBlockingType(taskPoolConfig.getBlockingQueueType(),taskPoolConfig.getBlockingQueueSize()),
-                createThreadFactory(taskPoolConfig.getThreadFactory()),
+                ThreadUtil.createThreadFactory(taskPoolConfig.getThreadFactory()),
                 createRejectHandler(taskPoolConfig.getRejectHandler())
         );
         this.threadId = id;
@@ -60,13 +62,13 @@ public class DynamicPool extends ThreadPoolExecutor {
         return
             switch (rejectHandler) {
                 case "CallerRunsPolicy" -> //只用调用者的线程运行任务
-                        new DynamicRejectHandler().new CallerRunsPolicy();
+                        new DynamicRejectHandler().getCallerRunsPolicy();
                 case "DiscardOldestPolicy" -> //丢弃队列中的任务，执行当前任务
-                        new DynamicRejectHandler().new DiscardOldestPolicy();
+                        new DynamicRejectHandler().getDiscardOldestPolicy();
                 case "DiscardPolicy" -> //不进行处理拒绝的任务
-                        new DynamicRejectHandler().new DiscardPolicy();
+                        new DynamicRejectHandler().getDiscardPolicy();
                 case "AbortPolicy" -> //默认直接抛出异常
-                        new DynamicRejectHandler().new AbortPolicy();
+                        new DynamicRejectHandler().getAbortPolicy();
                 default -> new DynamicRejectHandler();
             };
     }
@@ -126,7 +128,7 @@ public class DynamicPool extends ThreadPoolExecutor {
         //获取队列剩余容量
         return super.getQueue().remainingCapacity();
     }
-    public long getComplatedTaskCount() {
+    public long getCompletedTaskCount() {
         return super.getCompletedTaskCount();
     }
     public Map<String,Integer> getPoolStatus(){
@@ -143,19 +145,19 @@ public class DynamicPool extends ThreadPoolExecutor {
     //设置线程池核心参数信息
     public void setCoreSize(int size){
         if (size <= 0 ){
-            throw new IllegalArgumentException("核心吸纳成熟必须大于0");
+            throw new BadDataException("核心线程数必须大于0");
         }
         super.setCorePoolSize(size);//修改线程池核心进程数
     }
     public void setMaxPoolSize(int size){
         if (size <= 0 || size <getCorePoolSize()){
-            throw new IllegalArgumentException("最大线程数违法");
+            throw new BadDataException("最大线程数违法");
         }
         super.setMaximumPoolSize(size);//最大进程数
     }
     public void setKeepAliveTime(long time, TimeUnit unit){
         if (time < 0){
-            throw new ThreadPoolException("Alive Time 设定违法");
+            throw new BadDataException("Alive Time 设定违法");
         }
         if (ObjectUtil.isEmpty(unit)){
             unit = this.timeUnit;
@@ -165,7 +167,7 @@ public class DynamicPool extends ThreadPoolExecutor {
     }
     public void setKeepAliveTime(long time, String unit){
         if (time < 0){
-            throw new ThreadPoolException("Alive Time 设定违法");
+            throw new BadDataException("Alive Time 设定违法");
         }
         TimeUnit timeUnit1 = this.timeUnit;
         if (!(StringUtils.isEmpty(unit))){
@@ -178,7 +180,7 @@ public class DynamicPool extends ThreadPoolExecutor {
         super.setRejectedExecutionHandler(createRejectHandler(rejectHandler));
     }
     public void setThreadFactory(String threadFactory){
-        super.setThreadFactory(createThreadFactory(threadFactory));
+        super.setThreadFactory(ThreadUtil.createThreadFactory(threadFactory));
     }
 
     public void setThreadPoolName(String threadPoolName){
@@ -194,6 +196,6 @@ public class DynamicPool extends ThreadPoolExecutor {
             ((CapacityBlockingQueue<Runnable>) queue).setCapacity(size);
             return;
            }
-        throw new ThreadPoolException("该队列不支持调整大小");
+        throw new BadDataException("该队列不支持调整大小");
     }
 }
