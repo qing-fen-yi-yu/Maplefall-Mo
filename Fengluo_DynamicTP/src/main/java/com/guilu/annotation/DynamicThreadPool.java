@@ -11,5 +11,5 @@ import java.lang.annotation.Target;
 public @interface DynamicThreadPool {
     String name() default "";
     //是否扫描到后进行持久化存储
-    boolean storage() default false;
+//    boolean storage() default false;
 }

@@ -1,4 +1,4 @@
-package com.guilu.Register;
+package com.guilu.Manager.register;
 
 import com.guilu.annotation.DynamicThreadPool;
 import com.guilu.domain.RegisPoolDto;
@@ -31,8 +31,7 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         this.enabled = environment.getProperty(
                 "monitor.threadpool.dynamic.enabled",
                 Boolean.class,
-                false
-        );
+                false);
         this.beanFactory = beanFactory;
     }
 
@@ -76,7 +75,10 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         // 3. 异步注册线程池
         if (!waitsRegisTP.isEmpty()) {
             CompletableFuture.runAsync(() -> {
-                int regisRes = PoolRegister.registerThreadPool(waitsRegisTP);
+                int res = PoolRegister.registerThreadPool(waitsRegisTP);
+                if(res != waitsRegisTP.size()){
+                    log.warn("动态线程池{}未注册",waitsRegisTP.size() - res);
+                }
             }).exceptionally(ex -> {
                 log.error("Bean {} 动态线程池注册失败", beanName, ex);
                 return null;
