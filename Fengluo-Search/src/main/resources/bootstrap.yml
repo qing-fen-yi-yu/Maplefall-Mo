@@ -31,9 +31,11 @@ spring:
             refresh: false
           - data-id: sharding-feign.yaml
             refresh: false
+          - data-id: sharding-secret.yaml
+            refresh: false
 fl:
   redis:
-    host: localhost  # Redis地址
+    host: ${server.sql-ip}:${server.port.redis}  # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -41,14 +43,14 @@ fl:
       min-idle: 1
       max-wait: 300
   mysql:
-    host: localhost
+    host: ${server.sql-ip}:${server.port.mysql}
     port: 3306               # 默认端口，可不写
     database: fl-auth
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
-    host: localhost
+    host: ${server.sql-ip}:${server.port.mq}
     port: 5672
     vhost: /maplefall        # 根据你的元数据补充
     username: guilu

@@ -9,7 +9,7 @@ server:
     uri-encoding: UTF-8   #服务编码
 spring:
   application:
-    name: TaskApplication
+    name: UserApplication
   cloud:
     nacos:
       config:
@@ -28,11 +28,14 @@ spring:
             refresh: false
           - data-id: sharding-feign.yaml
             refresh: false
+          - data-id: sharding-secret.yaml
+            refresh: false
   profiles:
-    active: dev
+    active:
+      - dev
 fl:
   redis:
-    host: localhost # Redis地址
+    host: ${server.sql-ip}:${server.port.redis}  # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -40,14 +43,14 @@ fl:
       min-idle: 1
       max-wait: 300
   mysql:
-    host: localhost
-    port: 3306
+    host: ${server.sql-ip}
+    port: ${server.port.mysql}
     database: fl_task
     username: guilu
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
-    host: 120.26.2.254
+    host: ${server.sql-ip}:${server.port.mq}
     port: 5672
     vhost: /maplefall
     username: guilu
@@ -55,12 +58,6 @@ fl:
   auth:
     resource:
       enable: true
-      exclude-login-paths:
-        - "maple/user/login"
-        - "maple/user/refresh"
-        - "maple/user/logout"
-        - "maple/user/register"
-        - "maple/user/applyCode"
 monitor:
   threadpool:
     dynamic:
