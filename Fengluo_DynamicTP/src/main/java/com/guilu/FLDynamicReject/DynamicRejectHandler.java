@@ -1,4 +1,4 @@
-package com.guilu.threadPool;
+package com.guilu.FLDynamicReject;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,10 +66,26 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
         count.set(0);
     }
 
+    public RejectedExecutionHandler getCallerRunsPolicy() {
+        return new CallerRunsPolicy();
+    }
+
+    public RejectedExecutionHandler getDiscardOldestPolicy() {
+        return new DiscardOldestPolicy();
+    }
+
+    public RejectedExecutionHandler getDiscardPolicy() {
+        return  new DiscardPolicy();
+    }
+
+    public RejectedExecutionHandler getAbortPolicy() {
+        return  new AbortPolicy();
+    }
+
     /**
      * AbortPolicy - 默认直接抛出异常
      */
-    public class AbortPolicy implements RejectedExecutionHandler {
+    private class AbortPolicy implements RejectedExecutionHandler {
         public AbortPolicy() {
         }
 
@@ -84,7 +100,7 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
     /**
      * DiscardPolicy - 不进行处理拒绝的任务
      */
-    public class DiscardPolicy implements RejectedExecutionHandler {
+    private class DiscardPolicy implements RejectedExecutionHandler {
         public DiscardPolicy() {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
@@ -99,7 +115,7 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
     /**
      * DiscardOldestPolicy - 丢弃队列中最老的任务，执行当前任务
      */
-    public class DiscardOldestPolicy implements RejectedExecutionHandler {
+    private class DiscardOldestPolicy implements RejectedExecutionHandler {
         public DiscardOldestPolicy() {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
@@ -117,7 +133,7 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
     /**
      * CallerRunsPolicy - 只用调用者的线程运行任务
      */
-    public class CallerRunsPolicy implements RejectedExecutionHandler {
+    private class CallerRunsPolicy implements RejectedExecutionHandler {
         public CallerRunsPolicy() {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {

@@ -37,9 +37,4 @@ public class JvmExtrasAutoConfiguration {
     public JvmInfoMetrics jvmInfoMetrics(){
         return new JvmInfoMetrics();
     }
-
-    @PostConstruct
-    public void init(){
-        log.info("jvm扩展信息点监控");
-    }
 }

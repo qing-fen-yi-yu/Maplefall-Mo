@@ -10,8 +10,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import java.util.Collection;
 import java.util.List;
 
-@FeignClient(name = "user-service",fallbackFactory = UserClientFallback.class)
+@FeignClient(name = "UserApplication" ,contextId = "userClient",fallbackFactory = UserClientFallback.class)
 public interface UserClient {
-    @GetMapping("/detail")
+    @GetMapping("/user/detail")
     Result<List<User>> queryUserDetailByUserIds(Collection<Long> userIds);
 }

@@ -32,7 +32,7 @@ spring:
     active: dev
 fl:
   redis:
-    host: 120.26.2.254  # Redis地址
+    host: localhost  # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -40,7 +40,7 @@ fl:
       min-idle: 1
       max-wait: 300
   mysql:
-    host: 120.26.2.254
+    host: localhost
     port: 3306
     database: fl_auth
     username: guilu
