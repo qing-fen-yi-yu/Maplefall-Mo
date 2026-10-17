@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.lang.NonNull;
@@ -20,10 +21,10 @@ import java.util.concurrent.Executor;
 
 @ConditionalOnClass(RegisterBeanPostProcessor.class)
 @Slf4j
-@Component("poolRegister")
+@Component("ThreadPoolRegister")
 public class PoolRegister extends PoolManager implements BeanFactoryAware{
 
-    private DefaultListableBeanFactory beanFactory;
+    private static volatile DefaultListableBeanFactory beanFactory;
 
     public static int registerThreadPool(Collection<RegisPoolDto> tps) {
         if (tps == null || tps.isEmpty()) {

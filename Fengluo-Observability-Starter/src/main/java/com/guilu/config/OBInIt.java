@@ -12,7 +12,7 @@ import java.io.*;
 public class OBInIt implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) throws IOException {
-        File file = new File("E:\\FengLuo\\Fengluo-Observability-Starter\\src\\main\\resources\\Banner.txt");
+        File file = new File("E:\\FengLuo\\Fengluo-Observability-Starter\\src\\main\\resources\\OBBanner.txt");
         FileInputStream fileInputStream = new FileInputStream(file);
         try {
             String banner = new String(fileInputStream.readAllBytes());
