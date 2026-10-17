@@ -119,7 +119,6 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         if(anno != null){
             return anno;
         }
-        //发现Bean上不存在注解，则进行判断目标类上是否携带
         Class<?> targetClass = AopUtils.getTargetClass(bean);
         return AnnotationUtils.findAnnotation(targetClass, DynamicThreadPool.class);
     }
@@ -149,17 +148,13 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
             return null;
         }
         if (AnnotationUtils.findAnnotation(method, Bean.class) != null) {
-            log.debug("跳过 @Bean 工厂方法: {}", method.getName());
             return null;
         }
         if (method.getParameterCount() != 0) {
-            log.warn("线程池方法 {} 存在参数，跳过", method.getName());
             return null;
         }
-        // 返回值必须实现 Executor
         if (!Executor.class.isAssignableFrom(
                 method.getReturnType())) {
-            log.warn("方法 {} 返回值不是 Executor，跳过", method.getName());
             return null;
         }
         try {

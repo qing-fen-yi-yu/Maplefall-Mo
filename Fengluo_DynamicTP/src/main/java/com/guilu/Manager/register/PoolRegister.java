@@ -32,20 +32,36 @@ public class PoolRegister extends PoolManager implements BeanFactoryAware{
         }
         int count = 0;
         for (RegisPoolDto tp : tps) {
-            if (registerThreadPool(tp.getPool(), tp.getAnno())) {
+            boolean regisRes;
+
+            String beanName = tp.getBeanName();
+            Object pool = tp.getPool();
+            DynamicThreadPool anno = tp.getAnno();
+            if(StringUtils.isBlank(beanName)){
+                regisRes = registerThreadPool(pool,anno);
+            } else {
+                regisRes = registerThreadPool(pool,anno,beanName);
+            }
+            if (regisRes) {
                 count++;
             } else {
-                log.warn("线程池注册失败: {}", tp.getPool());
+                log.warn("线程池注册失败: {}", pool);
             }
         }
         return count;
     }
 
     public static boolean registerThreadPool(Object pool, DynamicThreadPool anno) {
+        return registerThreadPool(pool,anno,null);
+    }
+    public static boolean registerThreadPool(Object pool, DynamicThreadPool anno,String beanName) {
         if (pool == null) {
             return false;
         }
-        String name = (anno != null) ? anno.name() : null;
+        String name = beanName;
+        if(StringUtils.isBlank(beanName)){
+            name = (anno != null) ? anno.name() : null;
+        }
         if (StringUtils.isBlank(name)) {
             return registerDefaultThreadPool(pool);
         }
@@ -77,6 +93,6 @@ public class PoolRegister extends PoolManager implements BeanFactoryAware{
 
     @Override
     public void setBeanFactory(@NonNull BeanFactory beanFactory) throws BeansException {
-        this.beanFactory = (DefaultListableBeanFactory) beanFactory;
+        PoolRegister.beanFactory = (DefaultListableBeanFactory) beanFactory;
     }
 }
