@@ -133,7 +133,7 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
             ReflectionUtils.makeAccessible(field);
             Object value = field.get(target);
             if (isPool(value)) {
-                waitsRegisTP.add(RegisPoolDto.of(value, annotation));
+                waitsRegisTP.add(RegisPoolDto.of(value, annotation,beanName));
             } else {
                 log.warn("字段 {} 不是线程池，跳过注册", field.getName());
             }
