@@ -1,4 +1,4 @@
-package com.guilu.FLDynamicReject;
+package com.guilu.DynamicThreadPool.FLDynamicReject;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -50,6 +50,7 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
 
         // 3. 记录日志
         log.info("Rejected task: {}, rejectCount: {}", r.toString(), rejectCount);
+        throw new RejectedExecutionException("Task rejected from " + executor);
     }
 
     /**
@@ -116,6 +117,7 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
      * DiscardOldestPolicy - 丢弃队列中最老的任务，执行当前任务
      */
     private class DiscardOldestPolicy implements RejectedExecutionHandler {
+        private final ThreadLocal<Boolean> retrying = ThreadLocal.withInitial(() -> false);
         public DiscardOldestPolicy() {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
@@ -124,8 +126,11 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
             // 发布告警事件
 
             if (!e.isShutdown()) {
-                e.getQueue().poll();
-                e.execute(r);
+                if (retrying.get() || e.getQueue().poll() == null) {
+                    throw new RejectedExecutionException("Cannot discard oldest and enqueue task");
+                }
+                retrying.set(true);
+                try { e.execute(r); } finally { retrying.remove(); }
             }
         }
     }

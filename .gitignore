@@ -1,5 +1,6 @@
 secret.yml
 test/
+doc/
 *.sql
 .idea
 logs/
