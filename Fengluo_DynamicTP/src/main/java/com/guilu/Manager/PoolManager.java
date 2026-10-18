@@ -1,53 +1,50 @@
 package com.guilu.Manager;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
+import java.util.Objects;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class PoolManager {
     static final Map<String, Executor> POOL_REGISTRY = new ConcurrentHashMap<>();
-    static final Map<String,Executor> ALIVE_REGISTRY = new ConcurrentHashMap<>();
-    //累计注册次数
+    static final Map<String, Executor> ALIVE_REGISTRY = new ConcurrentHashMap<>();
     static final AtomicInteger COUNT = new AtomicInteger();
-    protected Map<String,Executor> getAlivePool(){
-        return ALIVE_REGISTRY;
+    protected Map<String, Executor> getAlivePool() {
+        return Map.copyOf(ALIVE_REGISTRY);
     }
     public int getRegisPoolCount() {
         return COUNT.get();
     }
-
     public int getCurCount() {
         return POOL_REGISTRY.size();
     }
-    //获取指定线程池
-    public static Executor getPoolByAll(String name) {
+    public int getAliveCount() {
+        return ALIVE_REGISTRY.size();
+    }
+    protected static Executor getPoolByAll(String name) {
         return POOL_REGISTRY.get(name);
     }
-    public static Executor getPoolByAlive(String name){
-        return  ALIVE_REGISTRY.get(name);
+    protected static Executor getPoolByAlive(String name) {
+        return ALIVE_REGISTRY.get(name);
     }
-    public static Executor addRegistry(String poolName,Object executor){
-        Executor pool =  (Executor) executor;
-        ALIVE_REGISTRY.putIfAbsent(poolName , pool);
-
-        return POOL_REGISTRY.putIfAbsent(poolName, pool);
+    protected static synchronized Executor addRegistry(String name, Object executor) {
+        if (name == null || name.isBlank()) throw new IllegalArgumentException("Pool name required");
+        if (!(executor instanceof ExecutorService pool)) throw new IllegalArgumentException("ExecutorService required");
+        if (pool.isShutdown()) throw new IllegalArgumentException("Cannot register a shutdown pool");
+        Executor previous = POOL_REGISTRY.putIfAbsent(name, pool);
+        if (previous != null && previous != pool) throw new IllegalStateException("Duplicate pool name: " + name);
+        ALIVE_REGISTRY.put(name, pool);
+        return previous;
     }
-    public static void incrementCount(){
-        COUNT.getAndIncrement();
+    protected static void incrementCount() {
+        COUNT.incrementAndGet();
     }
-
-    public static void removeExecutorByAlive(String poolName){
-        ALIVE_REGISTRY.remove(poolName);
+    protected static void removeExecutorByAlive(String name) {
+        ALIVE_REGISTRY.remove(name);
     }
-    //这里只进行执行更改任务，其他交由调用者决定
-    public static boolean setCount(int count){
-        return COUNT.compareAndSet(COUNT.get(), count);
-    }
-    protected void removePoolByRegis(String name, Object pool){
-        ALIVE_REGISTRY.remove(name,pool);
+    protected synchronized void removePoolByRegis(String name, Object pool) {
+        if (name == null || pool == null) return;
+        ALIVE_REGISTRY.remove(name, pool);
+        POOL_REGISTRY.remove(name, pool);
     }
 }

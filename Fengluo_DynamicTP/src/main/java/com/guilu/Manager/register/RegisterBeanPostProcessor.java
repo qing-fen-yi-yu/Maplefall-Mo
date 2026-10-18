@@ -1,7 +1,9 @@
 package com.guilu.Manager.register;
 
+import com.guilu.DynamicThreadPool.DynamicPool;
 import com.guilu.annotation.DynamicThreadPool;
 import com.guilu.domain.RegisPoolDto;
+import com.guilu.utils.RegisDefaultNameUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.aop.framework.Advised;
 import org.springframework.aop.support.AopUtils;
@@ -10,17 +12,21 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.annotation.MergedAnnotation;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 @Slf4j
 public class RegisterBeanPostProcessor implements BeanPostProcessor {
@@ -46,10 +52,18 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         if (isPool(bean)) {
             DynamicThreadPool annotation = findAnnotation(bean,beanName);
                 if(annotation != null){
-                    if(!PoolRegister.registerThreadPool(bean, annotation)){
+                    String poolName = resolveBeanPoolName(bean, beanName, annotation);
+                    if (!poolName.equals(beanName) && beanFactory.containsBean(poolName)
+                            && !Arrays.asList(beanFactory.getAliases(beanName)).contains(poolName)) {
+                        throw new IllegalStateException("Pool name conflicts with Spring Bean: " + poolName);
+                    }
+                    if(!PoolRegister.registerThreadPool(bean, null, poolName)){
                         log.error("字段线程池扫描失败: bean={}", beanName);
+                    } else if (!poolName.equals(beanName)) {
+                        beanFactory.registerAlias(beanName, poolName);
                     }
                 }
+            return bean;
         }
         Object target = getTargetObject(bean);
         if (target == null) {
@@ -71,25 +85,40 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
                 waitsRegisTP.addAll(regisPoolDtos);
             }
         });
-
-        // 3. 异步注册线程池
+        // 3. 同步注册，确保 Bean 初始化完成后即可查询和调参。
         if (!waitsRegisTP.isEmpty()) {
-            CompletableFuture.runAsync(() -> {
-                int res = PoolRegister.registerThreadPool(waitsRegisTP);
-                if(res != waitsRegisTP.size()){
-                    log.warn("动态线程池{}未注册",waitsRegisTP.size() - res);
-                }
-            }).exceptionally(ex -> {
-                log.error("Bean {} 动态线程池注册失败", beanName, ex);
-                return null;
-            });
+            PoolRegister.registerThreadPool(waitsRegisTP);
         }
 
         return bean;
     }
 
     private boolean isPool(Object bean) {
-        return bean instanceof Executor;
+        return bean instanceof ExecutorService
+                || bean instanceof ThreadPoolTaskExecutor;
+    }
+
+    private String resolveBeanPoolName(Object bean, String beanName, DynamicThreadPool annotation) {
+        if (beanFactory.containsBeanDefinition(beanName)) {
+            var definition = beanFactory.getBeanDefinition(beanName);
+            if (definition instanceof org.springframework.beans.factory.annotation.AnnotatedBeanDefinition annotated
+                    && annotated.getFactoryMethodMetadata() != null) {
+                MergedAnnotation<Bean> beanAnnotation = annotated.getFactoryMethodMetadata().getAnnotations().get(Bean.class);
+                if (beanAnnotation.isPresent()) {
+                    for (String name : beanAnnotation.synthesize().name()) {
+                        if (name != null && !name.isBlank()) return name;
+                    }
+                }
+            } else {
+                return beanName;
+            }
+        }
+        if (annotation.name() != null && !annotation.name().isBlank()) return annotation.name();
+        if (bean instanceof DynamicPool pool
+                && pool.getThreadPoolName() != null && !pool.getThreadPoolName().isBlank()) {
+            return pool.getThreadPoolName();
+        }
+        return RegisDefaultNameUtil.createThreadPoolName();
     }
 
     /**
@@ -122,7 +151,8 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         Class<?> targetClass = AopUtils.getTargetClass(bean);
         return AnnotationUtils.findAnnotation(targetClass, DynamicThreadPool.class);
     }
-    private List<RegisPoolDto> handleField(Class<?> beanClass, Field field,Object target,String beanName){
+    private List<RegisPoolDto> handleField(Class<?> beanClass
+            , Field field,Object target,String beanName){
         List<RegisPoolDto> waitsRegisTP = new ArrayList<>();
         DynamicThreadPool annotation = AnnotationUtils.findAnnotation(field, DynamicThreadPool.class);
         if (annotation == null) {
@@ -132,7 +162,7 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
             ReflectionUtils.makeAccessible(field);
             Object value = field.get(target);
             if (isPool(value)) {
-                waitsRegisTP.add(RegisPoolDto.of(value, annotation,beanName));
+                waitsRegisTP.add(RegisPoolDto.of(value, annotation,beanName + "." + field.getName()));
             } else {
                 log.warn("字段 {} 不是线程池，跳过注册", field.getName());
             }
@@ -141,7 +171,8 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         }
         return waitsRegisTP;
     }
-    private List<RegisPoolDto> handleMethod(Class<?> beanClass, Method method, Object target, String beanName){
+    private List<RegisPoolDto> handleMethod(Class<?> beanClass, Method method, Object target,
+                                            String beanName){
         List<RegisPoolDto> waitsRegisTP = new ArrayList<>();
         DynamicThreadPool annotation = AnnotationUtils.findAnnotation(method, DynamicThreadPool.class);
         if (annotation == null) {
@@ -162,7 +193,7 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
             Object invokeTarget = Modifier.isStatic(method.getModifiers()) ? null : target;
             Object value = method.invoke(invokeTarget);
             if (isPool(value)) {
-                waitsRegisTP.add(RegisPoolDto.of(value, annotation));
+                waitsRegisTP.add(RegisPoolDto.of(value, annotation, beanName + "." + method.getName()));
             } else {
                 log.warn("方法 {} 未返回有效线程池", method.getName());
             }

@@ -2,20 +2,19 @@ package com.guilu.DynamicThreadPool;
 
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.guilu.FLBlockingQueue.CapacityBlockingQueue;
-import com.guilu.FLDynamicReject.DynamicRejectHandler;
+import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
+import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 import com.guilu.domain.po.ThreadPool.TaskPoolConfig;
 import com.guilu.exception.BusinessException.BadDataException;
 import org.springframework.util.StringUtils;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.*;
 
 public class DynamicPool extends ThreadPoolExecutor {
     private final Long threadId;
-    private String threadName;
-    private TimeUnit timeUnit;
+    private volatile String threadName;
+    private volatile TimeUnit timeUnit;
     public DynamicPool(
             Long id,String threadName,
             int corePoolSize, int maximumPoolSize,
@@ -50,7 +49,8 @@ public class DynamicPool extends ThreadPoolExecutor {
             case "SynchronousQueue" -> new SynchronousQueue<>(); //不进行存储元素阻塞队列
             case "LinkedTransferQueue" -> new LinkedTransferQueue<>(); //创建无限的阻塞队列
             case "ArrayBlockingQueue" -> new ArrayBlockingQueue<>(blockingQueueSize); //默认有界阻塞队列
-            default -> new CapacityBlockingQueue<>(blockingQueueSize);
+            case "CapacityBlockingQueue" -> new CapacityBlockingQueue<>(blockingQueueSize);
+            default -> throw new IllegalArgumentException("Unknown queue type: " + blockingQueueType);
             };
     }
 
@@ -69,7 +69,7 @@ public class DynamicPool extends ThreadPoolExecutor {
                         new DynamicRejectHandler().getDiscardPolicy();
                 case "AbortPolicy" -> //默认直接抛出异常
                         new DynamicRejectHandler().getAbortPolicy();
-                default -> new DynamicRejectHandler();
+                default -> throw new IllegalArgumentException("Unknown rejection policy: " + rejectHandler);
             };
     }
 
@@ -98,13 +98,7 @@ public class DynamicPool extends ThreadPoolExecutor {
         return super.getQueue().size();
     }
     public String getQueueType() {
-        String string = super.getQueue().toString();
-        int index = string.lastIndexOf('.');
-        int end =  string.lastIndexOf('@');
-        if (index == -1 || end == -1) {
-            return string;
-        }
-        return string.substring(index,end);
+        return getQueue().getClass().getSimpleName();
     }
     public String getTimeUnit() {
         return timeUnit.toString();
@@ -144,7 +138,7 @@ public class DynamicPool extends ThreadPoolExecutor {
     }
     //设置线程池核心参数信息
     public void setCoreSize(int size){
-        if (size <= 0 ){
+        if (size < 0 ){
             throw new BadDataException("核心线程数必须大于0");
         }
         super.setCorePoolSize(size);//修改线程池核心进程数
@@ -174,7 +168,7 @@ public class DynamicPool extends ThreadPoolExecutor {
             timeUnit1 = creatTimeUnit(unit);
         }
 
-        super.setKeepAliveTime(time, timeUnit1);
+        setKeepAliveTime(time, timeUnit1);
     }
     public void setRejectHandler(String  rejectHandler){
         super.setRejectedExecutionHandler(createRejectHandler(rejectHandler));

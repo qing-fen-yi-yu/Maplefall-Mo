@@ -11,12 +11,11 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 @Slf4j
-@Component("PoolInitAndDes")
 public class PoolLifecycle implements SmartLifecycle {
     //线程池关闭的最大等待事件
     private static final long AWAIT_SECONDS = 5L;
 
-    //stop停止顺序在所有Bean销毁后执行
+    // 高 phase 在关闭时先停止，在 Bean 销毁之前执行。
     @Override
     public int getPhase() {
         return Ordered.LOWEST_PRECEDENCE;
@@ -45,12 +44,14 @@ public class PoolLifecycle implements SmartLifecycle {
     @Override
     public void stop(Runnable callback) {
         try {
+            AutoDestroyTP.of().stop();
             doShutdownAll();
         } catch (Throwable t) {
-            // SmartLifecycle.stop 抛出会导致容器关闭中断，这里必须兜住
             log.error("关闭线程池时发生异常", t);
         } finally {
             running = false;
+            PoolManager.ALIVE_REGISTRY.clear();
+            PoolManager.POOL_REGISTRY.clear();
             callback.run();//回调spring接口发送结束通知
         }
     }
@@ -65,15 +66,17 @@ public class PoolLifecycle implements SmartLifecycle {
             String key = e.getKey();
             ExecutorService es = (ExecutorService) e.getValue();
             log.info("poolname:{}----{}shutdown",key,es);
-            es.shutdown();
+            try { es.shutdown(); }
+            catch (RuntimeException ex) { log.error("线程池 {} 关闭失败", key, ex); }
         }
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(AWAIT_SECONDS);
         for (Map.Entry<String, Executor> e : snapshot) {
             String name = e.getKey();
             if (!(e.getValue() instanceof ExecutorService es)) {
                 continue;
             }
             try {
-                if (!es.awaitTermination(AWAIT_SECONDS, TimeUnit.SECONDS)) {
+                if (!es.awaitTermination(Math.max(0, deadline - System.nanoTime()), TimeUnit.NANOSECONDS)) {
                     forceShutdownNow(name, es);
                 }
             } catch (InterruptedException ie) {
@@ -87,6 +90,9 @@ public class PoolLifecycle implements SmartLifecycle {
         private void forceShutdownNow (String name, ExecutorService es){
             try {
                 List<Runnable> dropped = es.shutdownNow();
+                for (Runnable task : dropped) {
+                    if (task instanceof Future<?> future) future.cancel(false);
+                }
                 log.warn("线程池{}强制终止，存在{}个未执行任务", name, dropped.size());
             } catch (Throwable t) {
                 log.error("{}线程池关闭失败", name, t);
