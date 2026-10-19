@@ -28,6 +28,7 @@
         <module>Fengluo-Observability-Starter</module>
         <module>Fengluo-Config</module>
         <module>Fengluo_DynamicTP</module>
+        <module>Fengluo-Event</module>
     </modules>
 
     <properties>

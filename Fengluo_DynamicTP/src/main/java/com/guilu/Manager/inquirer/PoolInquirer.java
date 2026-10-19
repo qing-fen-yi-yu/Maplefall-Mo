@@ -1,7 +1,6 @@
 package com.guilu.Manager.inquirer;
 
 import com.guilu.Manager.PoolManager;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.concurrent.Executor;

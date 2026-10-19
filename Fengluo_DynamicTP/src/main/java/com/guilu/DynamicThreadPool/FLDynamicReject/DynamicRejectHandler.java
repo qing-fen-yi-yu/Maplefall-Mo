@@ -1,11 +1,14 @@
 package com.guilu.DynamicThreadPool.FLDynamicReject;
 
+import com.guilu.Event.TPRejectEvent;
+import com.guilu.EventPublisher.TpPublisher.TPRejectPublisher;
+import com.guilu.enums.RejectHandlerType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 自定义拒绝策略
@@ -20,9 +23,6 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
 
     public DynamicRejectHandler() {
     }
-
-    private final AtomicInteger count = new AtomicInteger(0);
-
     /**
      * 线程池ID（用于标识）
      */
@@ -32,39 +32,14 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
      * 线程池名称
      */
     private String poolName;
-
-    /**
-     * 设置线程池信息
-     */
-    public void setPoolInfo(Long poolId, String poolName) {
-        this.poolId = poolId;
-        this.poolName = poolName;
-    }
-
+    //拒绝策略计数器
+    private final AtomicLong count = new AtomicLong(0);
     @Override
     public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-        // 1. 拒绝次数自增
         long rejectCount = count.incrementAndGet();
-
-        // 2. 发布告警事件
-
-        // 3. 记录日志
+        publishRejectEvent(r,executor,RejectHandlerType.DYNAMIC);
         log.info("Rejected task: {}, rejectCount: {}", r.toString(), rejectCount);
         throw new RejectedExecutionException("Task rejected from " + executor);
-    }
-
-    /**
-     * 获取拒绝次数
-     */
-    public int getCount() {
-        return count.get();
-    }
-
-    /**
-     * 重置计数
-     */
-    public  void resetCount() {
-        count.set(0);
     }
 
     public RejectedExecutionHandler getCallerRunsPolicy() {
@@ -106,9 +81,8 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             count.incrementAndGet();
-
-            // 发布告警事件
-
+            //发布告警事件
+            publishRejectEvent(r,e,RejectHandlerType.DISCARD);
             log.debug("Task {} rejected and discarded", r.toString());
         }
     }
@@ -122,9 +96,8 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             count.incrementAndGet();
-
             // 发布告警事件
-
+            publishRejectEvent(r,e,RejectHandlerType.DISCARDOLDEST);
             if (!e.isShutdown()) {
                 if (retrying.get() || e.getQueue().poll() == null) {
                     throw new RejectedExecutionException("Cannot discard oldest and enqueue task");
@@ -143,12 +116,37 @@ public class DynamicRejectHandler implements RejectedExecutionHandler {
         }
         public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
             count.incrementAndGet();
-
             // 发布告警事件
-
+            publishRejectEvent(r,e,RejectHandlerType.CALLERRUNS);
             if (!e.isShutdown()) {
                 r.run();
             }
         }
+    }
+
+    private void publishRejectEvent(Runnable r,ThreadPoolExecutor e,RejectHandlerType type){
+        TPRejectPublisher.publishRejectEvent(TPRejectEvent.createEvent(r,getCount(),type.getRejectType(),e));
+    }
+
+    /**
+     * 设置线程池信息
+     */
+    public void setPoolInfo(Long poolId, String poolName, RejectHandlerType
+            type) {
+        this.poolId = poolId;
+        this.poolName = poolName;
+    }
+    /**
+     * 获取拒绝次数
+     */
+    public long getCount() {
+        return count.get();
+    }
+
+    /**
+     * 重置计数
+     */
+    public  void resetCount() {
+        count.set(0);
     }
 }
