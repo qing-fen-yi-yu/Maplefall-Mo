@@ -3,8 +3,10 @@ package com.guilu.DynamicThreadPool;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
-import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 import com.guilu.domain.po.ThreadPool.TaskPoolConfig;
+import com.guilu.enums.BlockingQueueType;
+import com.guilu.enums.PoolStatus;
+import com.guilu.enums.RejectHandlerType;
 import com.guilu.exception.BusinessException.BadDataException;
 import org.springframework.util.StringUtils;
 
@@ -43,15 +45,11 @@ public class DynamicPool extends ThreadPoolExecutor {
     }
 
     private static BlockingQueue<Runnable> createBlockingType(String blockingQueueType, Integer blockingQueueSize) {
-        return
-            switch (blockingQueueType){
-            case "LinkedBlockingQueue" -> new LinkedBlockingQueue<>(blockingQueueSize); //链表结构阻塞队列，吞吐量较高
-            case "SynchronousQueue" -> new SynchronousQueue<>(); //不进行存储元素阻塞队列
-            case "LinkedTransferQueue" -> new LinkedTransferQueue<>(); //创建无限的阻塞队列
-            case "ArrayBlockingQueue" -> new ArrayBlockingQueue<>(blockingQueueSize); //默认有界阻塞队列
-            case "CapacityBlockingQueue" -> new CapacityBlockingQueue<>(blockingQueueSize);
-            default -> throw new IllegalArgumentException("Unknown queue type: " + blockingQueueType);
-            };
+        BlockingQueue<Runnable> blockingQueue = BlockingQueueType.of(blockingQueueType, blockingQueueSize);
+        if(blockingQueue == null){
+            throw new BadDataException("阻塞队列值错误");
+        }
+        return blockingQueue;
     }
 
     private static TimeUnit creatTimeUnit(String timeUnit) {
@@ -59,18 +57,11 @@ public class DynamicPool extends ThreadPoolExecutor {
     }
 
     private static RejectedExecutionHandler createRejectHandler(String rejectHandler) {
-        return
-            switch (rejectHandler) {
-                case "CallerRunsPolicy" -> //只用调用者的线程运行任务
-                        new DynamicRejectHandler().getCallerRunsPolicy();
-                case "DiscardOldestPolicy" -> //丢弃队列中的任务，执行当前任务
-                        new DynamicRejectHandler().getDiscardOldestPolicy();
-                case "DiscardPolicy" -> //不进行处理拒绝的任务
-                        new DynamicRejectHandler().getDiscardPolicy();
-                case "AbortPolicy" -> //默认直接抛出异常
-                        new DynamicRejectHandler().getAbortPolicy();
-                default -> throw new IllegalArgumentException("Unknown rejection policy: " + rejectHandler);
-            };
+        RejectedExecutionHandler rejectedExecutionHandler = RejectHandlerType.of(rejectHandler);
+        if(rejectedExecutionHandler == null){
+            throw new BadDataException("拒绝策略值错误");
+        }
+        return rejectedExecutionHandler;
     }
 
 
@@ -87,8 +78,11 @@ public class DynamicPool extends ThreadPoolExecutor {
         //获取空闲进程最大存活时间
         return super.getKeepAliveTime(timeUnit);
     }
-    public RejectedExecutionHandler getRejectHandler() {
-        return super.getRejectedExecutionHandler(); //获取线程池执行策略
+    public int getPoolSize(){
+        return super.getPoolSize();
+    }
+    public String getRejectHandler() {
+        return super.getRejectedExecutionHandler().getClass().getSimpleName(); //获取线程池执行策略
     }
     public ThreadFactory getThreadFactory() {
         return super.getThreadFactory(); //获取线程创建工厂
@@ -125,15 +119,14 @@ public class DynamicPool extends ThreadPoolExecutor {
     public long getCompletedTaskCount() {
         return super.getCompletedTaskCount();
     }
-    public Map<String,Integer> getPoolStatus(){
-        //返回线程池状态 0:是，1:否
-        int shutdown = isShutdown()?0:1; // 线程池是否不再接收新的任务
-        int terminating = isTerminating()?0:1; //线程池是否正在关闭
-        int terminated = isTerminated()? 0:1; //线程池是否彻底关闭
+    public Map<PoolStatus,Boolean> getPoolStatus(){
+        boolean shutdown = isShutdown(); // 线程池是否不再接收新的任务
+        boolean terminating = isTerminating(); //线程池是否正在关闭
+        boolean terminated = isTerminated(); //线程池是否彻底关闭
         return Map.of(
-                "shutdown",shutdown,
-                "terminating",terminating,
-                "terminated",terminated
+                PoolStatus.SHUTDOWN,shutdown,
+                PoolStatus.TERMINATING,terminating,
+                PoolStatus.TERMINATED,terminated
         );
     }
     //设置线程池核心参数信息
@@ -189,7 +182,7 @@ public class DynamicPool extends ThreadPoolExecutor {
         if (queue instanceof CapacityBlockingQueue<Runnable>){
             ((CapacityBlockingQueue<Runnable>) queue).setCapacity(size);
             return;
-           }
+        }
         throw new BadDataException("该队列不支持调整大小");
     }
 }

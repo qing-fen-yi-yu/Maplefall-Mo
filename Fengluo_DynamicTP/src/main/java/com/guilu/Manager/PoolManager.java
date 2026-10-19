@@ -1,5 +1,8 @@
 package com.guilu.Manager;
 
+import com.guilu.exception.BusinessException.BadDataException;
+import com.guilu.exception.BusinessException.ThreadPoolException;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
@@ -28,11 +31,11 @@ public class PoolManager {
         return ALIVE_REGISTRY.get(name);
     }
     protected static synchronized Executor addRegistry(String name, Object executor) {
-        if (name == null || name.isBlank()) throw new IllegalArgumentException("Pool name required");
-        if (!(executor instanceof ExecutorService pool)) throw new IllegalArgumentException("ExecutorService required");
-        if (pool.isShutdown()) throw new IllegalArgumentException("Cannot register a shutdown pool");
+        if (name == null || name.isBlank()) throw new BadDataException("Pool name required");
+        if (!(executor instanceof ExecutorService pool)) throw new BadDataException("ExecutorService required");
+        if (pool.isShutdown()) throw new BadDataException("Cannot register a shutdown pool");
         Executor previous = POOL_REGISTRY.putIfAbsent(name, pool);
-        if (previous != null && previous != pool) throw new IllegalStateException("Duplicate pool name: " + name);
+        if (previous != null && previous != pool) throw new BadDataException("Duplicate pool name: " + name);
         ALIVE_REGISTRY.put(name, pool);
         return previous;
     }
