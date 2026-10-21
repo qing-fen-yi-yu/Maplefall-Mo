@@ -5,12 +5,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 
 @Data
-public class TaskPoolConfig implements Serializable {
+public class ThreadPoolConfig implements Serializable {
 
     @Serial
     private static final long serialVersionUID = 1L;
