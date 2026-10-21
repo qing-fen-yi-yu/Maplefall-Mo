@@ -1,4 +1,4 @@
-package com.guilu.jmx;
+package com.guilu;
 
 import com.guilu.exception.RequestException.ConnectionException;
 import lombok.extern.slf4j.Slf4j;

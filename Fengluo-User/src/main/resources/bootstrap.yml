@@ -35,7 +35,7 @@ spring:
       - dev
 fl:
   redis:
-    host: ${server.sql-ip}:${server.port.redis}  # Redis地址
+    host: ${server.sql-ip}  # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -51,7 +51,7 @@ fl:
     driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
     host: ${server.sql-ip}:${server.port.mq}
-    port: 5672
+    port: ${server.port.mq}
     vhost: /maplefall
     username: guilu
     password: 123

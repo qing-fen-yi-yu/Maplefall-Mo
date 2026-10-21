@@ -6,7 +6,7 @@ spring:
         namespace: d287a4e1-225a-4254-bd10-947bc27f15de #命名空间
         group: DEFAULT_GROUP #组别
   elasticsearch:
-    uris: ${server.nacos-ip}${server.port.es}  # Elasticsearch 地址
+    uris: ${server.sql-ip}:${server.port.es}  # Elasticsearch 地址
     connection-timeout: 5000ms
     socket-timeout: 60000ms
   data:

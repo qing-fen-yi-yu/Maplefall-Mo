@@ -1,5 +1,5 @@
 server:
-  port: 10010
+  port: 10030
   servlet:
     session:
       timeout: 30m
@@ -9,7 +9,7 @@ server:
     uri-encoding: UTF-8   #服务编码
 spring:
   application:
-    name: UserApplication
+    name: TaskApplication
   cloud:
     nacos:
       config:
@@ -35,7 +35,7 @@ spring:
       - dev
 fl:
   redis:
-    host: ${server.sql-ip}:${server.port.redis}  # Redis地址
+    host: ${server.sql-ip} # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -50,8 +50,8 @@ fl:
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
-    host: ${server.sql-ip}:${server.port.mq}
-    port: 5672
+    host: ${server.sql-ip}
+    port: ${server.port.mq}
     vhost: /maplefall
     username: guilu
     password: 123

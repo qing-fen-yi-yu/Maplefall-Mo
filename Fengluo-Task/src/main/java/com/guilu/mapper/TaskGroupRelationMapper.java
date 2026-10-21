@@ -2,6 +2,7 @@ package com.guilu.mapper;
 
 import com.guilu.domain.po.TaskGroupRelation;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import org.apache.ibatis.annotations.Mapper;
 
 /**
  * <p>
@@ -11,6 +12,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author 归鹭
  * @since 2026-10-12
  */
+@Mapper
 public interface TaskGroupRelationMapper extends BaseMapper<TaskGroupRelation> {
 
 }
