@@ -3,7 +3,7 @@ package com.guilu.DynamicThreadPool;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
-import com.guilu.domain.po.ThreadPool.TaskPoolConfig;
+import com.guilu.domain.po.ThreadPool.ThreadPoolConfig;
 import com.guilu.enums.BlockingQueueType;
 import com.guilu.enums.PoolStatus;
 import com.guilu.enums.RejectHandlerType;
@@ -29,19 +29,19 @@ public class DynamicPool extends ThreadPoolExecutor {
         this.threadName = threadName;
         this.timeUnit = unit;
     }
-    public DynamicPool(TaskPoolConfig taskPoolConfig, Long id){
+    public DynamicPool(ThreadPoolConfig threadPoolConfig, Long id){
         super(
-                taskPoolConfig.getCoreSize()
-                ,taskPoolConfig.getMaxPoolSize(),
-                taskPoolConfig.getKeepAliveTime(),
-                creatTimeUnit(taskPoolConfig.getTimeUnit()),
-                createBlockingType(taskPoolConfig.getBlockingQueueType(),taskPoolConfig.getBlockingQueueSize()),
-                ThreadUtil.createThreadFactory(taskPoolConfig.getThreadFactory()),
-                createRejectHandler(taskPoolConfig.getRejectHandler())
+                threadPoolConfig.getCoreSize()
+                , threadPoolConfig.getMaxPoolSize(),
+                threadPoolConfig.getKeepAliveTime(),
+                creatTimeUnit(threadPoolConfig.getTimeUnit()),
+                createBlockingType(threadPoolConfig.getBlockingQueueType(), threadPoolConfig.getBlockingQueueSize()),
+                ThreadUtil.createThreadFactory(threadPoolConfig.getThreadFactory()),
+                createRejectHandler(threadPoolConfig.getRejectHandler())
         );
         this.threadId = id;
-        this.threadName = taskPoolConfig.getThreadPoolName();
-        this.timeUnit = creatTimeUnit(taskPoolConfig.getTimeUnit());
+        this.threadName = threadPoolConfig.getThreadPoolName();
+        this.timeUnit = creatTimeUnit(threadPoolConfig.getTimeUnit());
     }
 
     private static BlockingQueue<Runnable> createBlockingType(String blockingQueueType, Integer blockingQueueSize) {

@@ -6,6 +6,7 @@ import com.guilu.Manager.register.PoolRegister;
 import com.guilu.Manager.register.RegisterBeanPostProcessor;
 import com.guilu.Manager.reporter.PoolReporter;
 import com.guilu.Manager.updater.PoolUpdater;
+import com.guilu.Manager.updater.UpdaterListener;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,4 +30,6 @@ public class DynamicPoolAutoConfiguration {
     public PoolLifecycle dynamicPoolLifecycle() { return new PoolLifecycle(); }
     @Bean(name={"ThreadPoolRegister", "dynamicPoolRegister"})
     public PoolRegister dynamicPoolRegister() { return new PoolRegister(); }
+    @Bean("ThreadPoolConfigUpdateListener")
+    public UpdaterListener updaterListener() { return new UpdaterListener(); }
 }
