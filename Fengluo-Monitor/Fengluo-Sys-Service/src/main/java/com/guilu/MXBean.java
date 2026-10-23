@@ -5,29 +5,15 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.management.MBeanServerConnection;
 import java.io.IOException;
-import java.lang.management.ClassLoadingMXBean;
-import java.lang.management.CompilationMXBean;
-import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.OperatingSystemMXBean;
-import java.lang.management.RuntimeMXBean;
-import java.lang.management.ThreadMXBean;
+import java.lang.management.*;
+import java.util.List;
 
 @Slf4j
-public class JMXBean {
+public class MXBean {
 
     public static MBeanServerConnection getLocalMBeanServerConnection() {
         return ManagementFactory.getPlatformMBeanServer();
     }
-
-    public static RuntimeMXBean getRunTimeBeanByFactory() {
-        return ManagementFactory.getRuntimeMXBean();
-    }
-
-    public static RuntimeMXBean getRunTimeBeanByConnection(MBeanServerConnection conn) {
-        return getMXBean(conn, ManagementFactory.RUNTIME_MXBEAN_NAME, RuntimeMXBean.class);
-    }
-
     /**
      * 获取本地平台 MXBean
      */
@@ -42,16 +28,13 @@ public class JMXBean {
         return getMXBean(conn, beanName, clazz);
     }
 
-    /**
-     * 兼容原有方法名。返回类型改为泛型后
-     */
     @Deprecated
     public static <T> T getCollection(MBeanServerConnection conn, String beanName, Class<T> clazz) {
         return getMXBean(conn, beanName, clazz);
     }
 
     /**
-     * 通用 MXBean 代理创建（本地/远程共用）
+     * 通用 MXBean 代理创建
      */
     public static <T> T getMXBean(MBeanServerConnection conn, String beanName, Class<T> clazz) {
         try {
@@ -61,6 +44,22 @@ public class JMXBean {
         }
     }
 
+    /**
+     * 获取本地所有类型相同的mxBean
+     * @param clazz
+     * @return
+     * @param <T>
+     */
+    public static <T extends PlatformManagedObject> List<T> getLocalAllTypeMxBean(Class<T> clazz){
+        return getAllTypeMxBeans(getLocalMBeanServerConnection(), clazz);
+    }
+    public static <T extends  PlatformManagedObject> List<T> getAllTypeMxBeans(MBeanServerConnection connection,Class<T> clazz){
+        try {
+            return ManagementFactory.getPlatformMXBeans(connection,clazz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
     public static MemoryMXBean getMemoryBean() {
         return ManagementFactory.getMemoryMXBean();
     }
@@ -75,5 +74,21 @@ public class JMXBean {
     }
     public static OperatingSystemMXBean getOperatingSystemBean() {
         return ManagementFactory.getOperatingSystemMXBean();
+    }
+    public static List<MemoryPoolMXBean> getMemoryPoolMXBeans(){
+        return ManagementFactory.getMemoryPoolMXBeans();
+    }
+    public static List<MemoryManagerMXBean> getMemoryManagerMXBeans(){
+        return ManagementFactory.getMemoryManagerMXBeans();
+    }
+    public static List<GarbageCollectorMXBean> getGarbageCollectorMXBeans(){
+        return ManagementFactory.getGarbageCollectorMXBeans();
+    }
+    public static RuntimeMXBean getRunTimeBeanByFactory() {
+        return ManagementFactory.getRuntimeMXBean();
+    }
+
+    public static RuntimeMXBean getRunTimeBeanByConnection(MBeanServerConnection conn) {
+        return getMXBean(conn, ManagementFactory.RUNTIME_MXBEAN_NAME, RuntimeMXBean.class);
     }
 }

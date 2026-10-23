@@ -2,3 +2,4 @@
 com.guilu.config.GlobalExceptionAutoConfiguration
 com.guilu.config.JvmExtrasAutoConfiguration
 com.guilu.config.ThreadRegisterConfiguration
+com.guilu.config.DynamicPoolAutoConfiguration

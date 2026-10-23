@@ -85,3 +85,6 @@ management:
       enabled: true
     prometheus:
       enabled: true
+  observations:
+    annotations:
+      enabled: true

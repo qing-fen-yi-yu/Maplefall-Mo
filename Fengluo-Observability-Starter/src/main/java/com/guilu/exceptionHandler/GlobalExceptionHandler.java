@@ -35,6 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(GlobalException.class)
     public ResponseEntity<ProblemDetail> handleGlobal(GlobalException e) {
+        registryHandler(e);
         HttpStatusCode status = statusOf(e);
         return ResponseEntity.status(status)
                 .body(ProblemDetail.forStatusAndDetail(status, e.getMessage()));
