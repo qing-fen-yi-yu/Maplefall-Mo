@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+//todo 实现对各个监控队列的任务耗时，队列长度进行监控
 public class CapacityBlockingQueue<E> extends AbstractQueue<E> implements BlockingQueue<E> {
     private static final class Entry<T> {
         final T value;

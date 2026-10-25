@@ -2,6 +2,8 @@ package com.guilu.jvm;
 
 import com.guilu.MXBean;
 import com.guilu.domain.BufferPoolInfo;
+import com.guilu.domain.MemoryPoolInfo;
+import com.guilu.domain.MemoryPoolInfo.ThresholdInfo;
 
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.MemoryMXBean;
@@ -29,8 +31,7 @@ public class MemMxBeanMetrics {
         return bpInfos;
     }
     /**
-     * todo MemoryPoolMXBean
-     * {@link <a href="https://docs.oracle.com/en/java/javase/17/docs/api/java.management/java/lang/management/MemoryPoolMXBean.html">...</a>}
+     * 获取本地内存池 MXBean。指标快照通过 {@link #getMemoryPoolInfo()} 读取。
      */
     public static List<MemoryPoolMXBean> getMemoryMxBeans(){
         return  MXBean.getMemoryPoolMXBeans();
@@ -45,5 +46,27 @@ public class MemMxBeanMetrics {
     //未进行终结处理的对象的数量
     public static Integer getPendingCount(){
         return memoryMXBean.getObjectPendingFinalizationCount();
+    }
+    /**
+     * 按内存池名称返回当前、峰值、最近 GC 后用量及两类阈值统计。
+     */
+    public static Map<String, MemoryPoolInfo> getMemoryPoolInfo() {
+        Map<String, MemoryPoolInfo> result = new java.util.LinkedHashMap<>();
+        for (MemoryPoolMXBean bean : getMemoryMxBeans()) {
+            if (bean.isValid()) result.put(bean.getName(), snapshot(bean));
+        }
+        return java.util.Collections.unmodifiableMap(result);
+    }
+    public static MemoryPoolInfo snapshot(MemoryPoolMXBean bean) {
+        java.util.Objects.requireNonNull(bean, "bean");
+        ThresholdInfo usageThreshold = bean.isUsageThresholdSupported()
+                ? new ThresholdInfo(true, bean.getUsageThreshold(), bean.getUsageThresholdCount(),
+                        bean.isUsageThresholdExceeded()) : ThresholdInfo.unsupported();
+        ThresholdInfo collectionThreshold = bean.isCollectionUsageThresholdSupported()
+                ? new ThresholdInfo(true, bean.getCollectionUsageThreshold(), bean.getCollectionUsageThresholdCount(),
+                        bean.isCollectionUsageThresholdExceeded()) : ThresholdInfo.unsupported();
+        return new MemoryPoolInfo(bean.getName(), bean.getType(), bean.getUsage(), bean.getPeakUsage(),
+                bean.getCollectionUsage(), java.util.Arrays.asList(bean.getMemoryManagerNames()),
+                usageThreshold, collectionThreshold);
     }
 }

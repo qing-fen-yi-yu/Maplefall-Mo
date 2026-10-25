@@ -45,36 +45,27 @@ public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
         this.largestPoolSize = largestPoolSize;
     }
 
-    public static DynamicPoolSnapshot collectPoolData(DynamicPool dynamicPool) {
-        if (dynamicPool == null) {
-            return null;
-        }
-
-        String name = dynamicPool.getThreadPoolName();
-        Integer coreSize = dynamicPool.getCorePoolSize();
-        Integer maxSize = dynamicPool.getMaximumPoolSize();
-        Integer poolSize = dynamicPool.getPoolSize();
-        Integer activeCount = dynamicPool.getActiveCount();
-        Integer queueSize = dynamicPool.getQueueSize();
-        Integer remainingCapacity = dynamicPool.getQueueRemainingCapacity();
-        Long completedTasks = dynamicPool.getCompletedTaskCount();
-        String rejectHandler = dynamicPool.getRejectHandler().getClass().getSimpleName();
-
-        Long threadId = dynamicPool.getThreadId();
-        String threadName = dynamicPool.getThreadPoolName();
-        TimeUnit timeUnit = TimeUnit.valueOf(dynamicPool.getTimeUnit());
-        Map<PoolStatus, Boolean> poolStatus = new EnumMap<>(dynamicPool.getPoolStatus());
-        String queueType = dynamicPool.getQueueType();
-        Long taskCount = dynamicPool.getTaskCount();
-        long keepAliveTime = dynamicPool.getKeepAliveTime();
-        Integer largestPoolSize = dynamicPool.getLargestPoolSize();
-
-        return new DynamicPoolSnapshot(
-                name, coreSize, maxSize, poolSize, activeCount,
-                queueSize, remainingCapacity, completedTasks, rejectHandler,
-                threadId, threadName, timeUnit, poolStatus,
-                queueType, taskCount, keepAliveTime, largestPoolSize
-        );
+    /** Common snapshot for reporter and metrics consumers. Unsupported executor types return null. */
+    public static DynamicPoolSnapshot collectPoolData(String registryName, java.util.concurrent.Executor executor) {
+        java.util.Objects.requireNonNull(registryName, "registryName");
+        java.util.Objects.requireNonNull(executor, "executor");
+        if (!(executor instanceof java.util.concurrent.ThreadPoolExecutor pool)) return null;
+        DynamicPool dynamic = pool instanceof DynamicPool ? (DynamicPool) pool : null;
+        TimeUnit unit = dynamic == null ? TimeUnit.MILLISECONDS : TimeUnit.valueOf(dynamic.getTimeUnit());
+        String handler = pool.getRejectedExecutionHandler().getClass().getSimpleName();
+        Map<PoolStatus, Boolean> status = new EnumMap<>(PoolStatus.class);
+        status.put(PoolStatus.SHUTDOWN, pool.isShutdown());
+        status.put(PoolStatus.TERMINATING, pool.isTerminating());
+        status.put(PoolStatus.TERMINATED, pool.isTerminated());
+        return new DynamicPoolSnapshot(registryName, pool.getCorePoolSize(), pool.getMaximumPoolSize(),
+                pool.getPoolSize(), pool.getActiveCount(), pool.getQueue().size(),
+                pool.getQueue().remainingCapacity(), pool.getCompletedTaskCount(),
+                handler.isEmpty() ? "non" : handler, dynamic == null ? null : dynamic.getThreadId(),
+                registryName, unit, Map.copyOf(status), pool.getQueue().getClass().getSimpleName(),
+                pool.getTaskCount(), pool.getKeepAliveTime(unit), pool.getLargestPoolSize());
     }
 
+    public static DynamicPoolSnapshot collectPoolData(DynamicPool dynamicPool) {
+        return dynamicPool == null ? null : collectPoolData(dynamicPool.getThreadPoolName(), dynamicPool);
+    }
 }

@@ -7,7 +7,6 @@ import java.lang.management.CompilationMXBean;
 
 /**
  * 应用编译信息。
- * 此时字段取兜底值({@code jitName = null}, {@code totalCompileTime = -1})。
  */
 @Getter
 public final class AppCompileInfo {
