@@ -3,47 +3,36 @@ package com.guilu.config;
 import com.guilu.exceptionHandler.GlobalExceptionHandler;
 import com.guilu.exceptionHandler.chainAspect.GlobalExceptionAspect;
 import io.micrometer.core.instrument.MeterRegistry;
-import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.annotation.Aspect;
 import org.springframework.aop.aspectj.annotation.AnnotationAwareAspectJAutoProxyCreator;
+import org.springframework.boot.actuate.autoconfigure.metrics.CompositeMeterRegistryAutoConfiguration;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
-import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.boot.autoconfigure.aop.AopAutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.*;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@Slf4j
-@AutoConfiguration
-@ConditionalOnProperty(
-        prefix = "monitor.exception",
-        name = "enabled",
-        havingValue = "true",
-        matchIfMissing = true
-)
+@AutoConfiguration(after = {CompositeMeterRegistryAutoConfiguration.class, AopAutoConfiguration.class})
+@ConditionalOnClass({MeterRegistry.class, org.springframework.web.bind.annotation.RestControllerAdvice.class})
+@ConditionalOnBean(MeterRegistry.class)
 @ConditionalOnWebApplication(type = ConditionalOnWebApplication.Type.SERVLET)
+@ConditionalOnProperty(prefix = "monitor.exception", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class GlobalExceptionAutoConfiguration {
-
     @Bean
     @ConditionalOnMissingBean
-    public GlobalExceptionHandler globalExceptionHandler(MeterRegistry meterRegistry) {
-        return new GlobalExceptionHandler(meterRegistry);
+    public GlobalExceptionHandler globalExceptionHandler(MeterRegistry registry) {
+        return new GlobalExceptionHandler(registry);
     }
 
-    @Bean
-    @ConditionalOnMissingBean
+    @Configuration(proxyBeanMethods = false)
     @ConditionalOnClass(Aspect.class)
-    public GlobalExceptionAspect globalExceptionAspect(GlobalExceptionHandler handler,
-                                                       ConfigurableApplicationContext ctx) {
-        boolean aopEnabled = ctx.getBeanNamesForType(
-                AnnotationAwareAspectJAutoProxyCreator.class).length > 0;
-        if (!aopEnabled) {
-            log.warn("未检测到 AOP 后处理器，{} 全局异常链路将不会执行。"
-                    + "请确认已引入 spring-boot-starter-aop", GlobalExceptionAspect.class.getName());
-        } else {
-            log.info("全局链路异常处理注册成功");
+    @ConditionalOnBean(AnnotationAwareAspectJAutoProxyCreator.class)
+    @ConditionalOnProperty(prefix = "spring.aop", name = "auto", havingValue = "true", matchIfMissing = true)
+    static class ExceptionAspectConfiguration {
+        @Bean
+        @ConditionalOnMissingBean
+        GlobalExceptionAspect globalExceptionAspect(GlobalExceptionHandler handler) {
+            return new GlobalExceptionAspect(handler);
         }
-        return new GlobalExceptionAspect(handler);
     }
 }

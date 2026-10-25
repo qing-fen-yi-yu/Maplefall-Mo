@@ -1,5 +1,5 @@
-#配置加载类
-com.guilu.config.GlobalExceptionAutoConfiguration
-com.guilu.config.JvmExtrasAutoConfiguration
-com.guilu.config.ThreadRegisterConfiguration
 com.guilu.config.DynamicPoolAutoConfiguration
+com.guilu.config.MonitorMetricsAutoConfiguration
+com.guilu.config.JvmExtrasAutoConfiguration
+com.guilu.config.GlobalExceptionAutoConfiguration
+com.guilu.config.ObservabilityAutoConfiguration

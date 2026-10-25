@@ -1,27 +1,68 @@
 {
-  "groups": [{
-    "name": "motitor"
-  }],
-  "properties": [{
-    "name": "monitor.exception.enabled",
-    "type": "java.lang.Boolean",
-    "description": "是否启用异常监控",
-    "defaultValue": true
-  },{
-    "name": "monitor.jvm.extras.enabled",
-    "type": "java.lang.Boolean",
-    "description": "jvm扩展监控功能",
-    "defaultValue": true
-  },{
-    "name": "monitor.jvm.basic.enabled",
-    "type": "java.lang.Boolean",
-    "description": "jvm基础监控信息",
-    "defaultValue": true
-  },{
-    "name": "monitor.threadpool.dynamic.enabled",
-    "type": "java.lang.Boolean",
-    "description": "动态线程池监控功能",
-    "defaultValue": true
-  }
+  "groups": [
+    {
+      "name": "monitor"
+    },
+    {
+      "name": "monitor.metrics",
+      "type": "com.guilu.config.MonitorMetricsProperties",
+      "sourceType": "com.guilu.config.MonitorMetricsProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "monitor.metrics.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用 Monitor SDK 补充指标自动配置，不影响 Actuator 基础指标。",
+      "defaultValue": true
+    },
+    {
+      "name": "monitor.metrics.jvm-enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用 JVM 与进程补充指标。",
+      "defaultValue": true
+    },
+    {
+      "name": "monitor.metrics.gc-enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用 GC 事件指标及通知订阅。",
+      "defaultValue": true
+    },
+    {
+      "name": "monitor.metrics.executor-enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用线程池指标采集，需要存在 PoolReporter Bean。",
+      "defaultValue": true
+    },
+    {
+      "name": "monitor.metrics.executor-refresh-interval",
+      "type": "java.time.Duration",
+      "description": "线程池发现与快照刷新间隔",
+      "defaultValue": "10s"
+    },
+    {
+      "name": "monitor.exception.enabled",
+      "type": "java.lang.Boolean",
+      "description": "是否启用异常监控",
+      "defaultValue": true
+    },
+    {
+      "name": "monitor.jvm.extras.enabled",
+      "type": "java.lang.Boolean",
+      "description": "jvm扩展监控功能",
+      "defaultValue": true
+    },
+    {
+      "name": "monitor.threadpool.dynamic.enabled",
+      "type": "java.lang.Boolean",
+      "description": "动态线程池监控功能",
+      "defaultValue": false
+    },
+    {
+      "name": "monitor.banner.enabled",
+      "type": "java.lang.Boolean",
+      "description": "?????? Starter ?????",
+      "defaultValue": true
+    }
   ]
 }

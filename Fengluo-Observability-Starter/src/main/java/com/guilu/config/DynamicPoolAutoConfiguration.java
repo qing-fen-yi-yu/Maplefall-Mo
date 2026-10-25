@@ -9,12 +9,12 @@ import com.guilu.Manager.updater.PoolUpdater;
 import com.guilu.Manager.updater.UpdaterListener;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
+/** Owns pool registration, queries, updates and lifecycle; metrics are registered separately. */
 @AutoConfiguration
 @ConditionalOnProperty(prefix="monitor.threadpool.dynamic", name="enabled", havingValue="true")
 public class DynamicPoolAutoConfiguration {
@@ -25,10 +25,14 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean(name={"ThreadPoolUpdater", "dynamicPoolUpdater"})
     @ConditionalOnMissingBean
-    public PoolUpdater dynamicPoolUpdater() { return PoolUpdater.of(); }
+    public PoolUpdater dynamicPoolUpdater() {
+        return PoolUpdater.of();
+    }
     @Bean(name={"ThreadPoolInquirer", "dynamicPoolInquirer"})
     @ConditionalOnMissingBean
-    public PoolInquirer dynamicPoolInquirer() { return PoolInquirer.of(); }
+    public PoolInquirer dynamicPoolInquirer() {
+        return PoolInquirer.of();
+    }
     @Bean(name={"ThreadPoolReporter", "dynamicPoolReporter"})
     @ConditionalOnMissingBean
     public PoolReporter dynamicPoolReporter(Environment environment) {
@@ -36,11 +40,17 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean(name={"PoolInitAndDes", "dynamicPoolLifecycle"})
     @ConditionalOnMissingBean
-    public PoolLifecycle dynamicPoolLifecycle() { return new PoolLifecycle(); }
+    public PoolLifecycle dynamicPoolLifecycle() {
+        return new PoolLifecycle();
+    }
     @Bean(name={"ThreadPoolRegister", "dynamicPoolRegister"})
     @ConditionalOnMissingBean
-    public PoolRegister dynamicPoolRegister() { return new PoolRegister(); }
+    public PoolRegister dynamicPoolRegister() {
+        return new PoolRegister();
+    }
     @Bean("ThreadPoolConfigUpdateListener")
     @ConditionalOnMissingBean
-    public UpdaterListener updaterListener() { return new UpdaterListener(); }
+    public UpdaterListener updaterListener() {
+        return new UpdaterListener();
+    }
 }
