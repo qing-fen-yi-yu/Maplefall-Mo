@@ -1,6 +1,6 @@
 package com.guilu.jvm;
 import com.guilu.MXBean;
-import com.guilu.domain.GcInfo;
+import com.guilu.monitor.domain.GcInfo;
 import java.lang.management.GarbageCollectorMXBean;
 import java.util.*;
 

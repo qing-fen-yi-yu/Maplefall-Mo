@@ -5,8 +5,8 @@
     },
     {
       "name": "monitor.metrics",
-      "type": "com.guilu.config.MonitorMetricsProperties",
-      "sourceType": "com.guilu.config.MonitorMetricsProperties"
+      "type": "com.guilu.properties.MonitorMetricsProperties",
+      "sourceType": "com.guilu.properties.MonitorMetricsProperties"
     }
   ],
   "properties": [
@@ -37,8 +37,20 @@
     {
       "name": "monitor.metrics.executor-refresh-interval",
       "type": "java.time.Duration",
-      "description": "线程池发现与快照刷新间隔",
+      "description": "线程池快照刷新间隔，需要存在 PoolReporter Bean 才会生效。",
       "defaultValue": "10s"
+    },
+    {
+      "name": "monitor.metrics.jvm-refresh-interval",
+      "type": "java.time.Duration",
+      "description": "系统、死锁与 OSHI 明细数据的缓存有效期。",
+      "defaultValue": "10s"
+    },
+    {
+      "name": "monitor.metrics.sys-detail-info",
+      "type": "java.lang.Boolean",
+      "description": "是否采集 OSHI 系统明细指标（CPU 分项占用率、物理内存、JVM 运行时内存）。",
+      "defaultValue": false
     },
     {
       "name": "monitor.exception.enabled",
@@ -49,19 +61,19 @@
     {
       "name": "monitor.jvm.extras.enabled",
       "type": "java.lang.Boolean",
-      "description": "jvm扩展监控功能",
+      "description": "mic框架的jvm扩展监控功能",
       "defaultValue": true
     },
     {
       "name": "monitor.threadpool.dynamic.enabled",
       "type": "java.lang.Boolean",
-      "description": "动态线程池监控功能",
+      "description": "动态线程池功能",
       "defaultValue": false
     },
     {
       "name": "monitor.banner.enabled",
       "type": "java.lang.Boolean",
-      "description": "?????? Starter ?????",
+      "description": "是否开启OB初始化Banner",
       "defaultValue": true
     }
   ]
