@@ -2,8 +2,6 @@ package com.guilu.Manager.updater;
 
 import com.guilu.Manager.PoolManager;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
-import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
-import com.guilu.domain.po.ThreadPool.ThreadPoolConfig;
 import com.guilu.exception.BusinessException.ThreadPoolException;
 
 import java.util.concurrent.*;
@@ -17,20 +15,24 @@ public class PoolUpdater extends PoolManager {
         removePoolByRegis(name, executor);
     }
 
-    public void update(String name, int coreSize, int maxSize, long keepAlive, TimeUnit unit, Integer queueCapacity) {
+    /**
+     * 动态更新线程池参数。null 字段表示保持不变，只有显式传入的值才会生效。
+     */
+    public void update(String name, Integer coreSize, Integer maxSize, Long keepAlive,
+                       TimeUnit unit, Integer queueCapacity) {
         if (name == null || name.isBlank()) {
             throw new ThreadPoolException("线程池名称不能为空");
         }
-        if (unit == null) {
+        if (keepAlive != null && unit == null) {
             throw new ThreadPoolException("时间单位不能为空: " + name);
         }
-        if (coreSize < 0) {
+        if (coreSize != null && coreSize < 0) {
             throw new ThreadPoolException("核心线程数非法: " + coreSize);
         }
-        if (maxSize < 1 || coreSize > maxSize) {
-            throw new ThreadPoolException("最大线程数非法或小于核心线程数: " + maxSize);
+        if (maxSize != null && maxSize < 1) {
+            throw new ThreadPoolException("最大线程数非法: " + maxSize);
         }
-        if (keepAlive < 0) {
+        if (keepAlive != null && keepAlive < 0) {
             throw new ThreadPoolException("keepAlive 非法: " + keepAlive);
         }
 
@@ -52,25 +54,33 @@ public class PoolUpdater extends PoolManager {
             if (pool.isShutdown()) {
                 throw new ThreadPoolException("线程池已关闭: " + name);
             }
-            if (pool.allowsCoreThreadTimeOut() && keepAlive == 0) {
-                throw new ThreadPoolException("core 允许超时时 keepAlive 必须为正: " + name);
-            }
 
             int currentCore = pool.getCorePoolSize();
             int currentMax = pool.getMaximumPoolSize();
-
-            if (coreSize > currentMax) {
-                pool.setMaximumPoolSize(maxSize);
-                pool.setCorePoolSize(coreSize);
-            } else if (maxSize < currentCore) {
-                pool.setCorePoolSize(coreSize);
-                pool.setMaximumPoolSize(maxSize);
-            } else {
-                pool.setCorePoolSize(coreSize);
-                pool.setMaximumPoolSize(maxSize);
+            int targetCore = coreSize == null ? currentCore : coreSize;
+            int targetMax = maxSize == null ? currentMax : maxSize;
+            if (targetCore > targetMax) {
+                throw new ThreadPoolException(
+                        "最大线程数非法或小于核心线程数: " + targetMax + " < " + targetCore);
+            }
+            if (pool.allowsCoreThreadTimeOut() && keepAlive != null && keepAlive == 0) {
+                throw new ThreadPoolException("core 允许超时时 keepAlive 必须为正: " + name);
             }
 
-            pool.setKeepAliveTime(keepAlive, unit);
+            if (targetMax < currentCore) {
+                pool.setCorePoolSize(targetCore);
+                pool.setMaximumPoolSize(targetMax);
+            } else if (targetCore > currentMax) {
+                pool.setMaximumPoolSize(targetMax);
+                pool.setCorePoolSize(targetCore);
+            } else {
+                pool.setCorePoolSize(targetCore);
+                pool.setMaximumPoolSize(targetMax);
+            }
+
+            if (keepAlive != null) {
+                pool.setKeepAliveTime(keepAlive, unit);
+            }
 
             if (queueCapacity != null) {
                 CapacityBlockingQueue<Runnable> queue =
