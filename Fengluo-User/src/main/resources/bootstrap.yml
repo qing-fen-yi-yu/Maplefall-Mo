@@ -71,10 +71,10 @@ monitor:
   exception:
     enabled: true
   jvm:
-    basic:
-      enabled: false
     extras:
-      enabled: false
+      enabled: true
+  banner:
+    enabled: true
 management:
   endpoints:
     web:
