@@ -29,10 +29,19 @@ public class AutoDestroyTP {
         scheduler.scheduleWithFixedDelay(this::cleanNow, 0, checkTimes, unit);
     }
     public void cleanNow() {
-        PoolInquirer.of().getAllAlivePool().forEach((name, executor) -> {
-            if (executor instanceof ExecutorService service && service.isTerminated())
-                PoolUpdater.of().removePoolByBean(name, executor);
-        });
+        try {
+            PoolInquirer.of().getAllAlivePool().forEach((name, executor) -> {
+                try {
+                    if (executor instanceof ExecutorService service && service.isTerminated()) {
+                        PoolUpdater.of().removePoolByBean(name, executor);
+                    }
+                } catch (RuntimeException e) {
+                    log.warn("清理线程池 {} 失败", name, e);
+                }
+            });
+        } catch (RuntimeException e) {
+            log.warn("线程池清理任务执行失败", e);
+        }
     }
     public synchronized void stop() {
         if (scheduler != null) { scheduler.shutdownNow(); scheduler = null; }
