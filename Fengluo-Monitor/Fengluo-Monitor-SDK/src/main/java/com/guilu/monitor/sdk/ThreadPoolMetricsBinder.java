@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.binder.MeterBinder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -21,11 +22,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.function.ToDoubleFunction;
-
+@Slf4j
 public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable {
-
-    private static final System.Logger LOG =
-            System.getLogger(ThreadPoolMetricsBinder.class.getName());
 
     private final ThreadPoolSnapshotSource source;
     private final long intervalMillis;
@@ -72,7 +70,6 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
         }
     }
 
-    /** Visible for tests; source failures are propagated. */
     public void refresh() {
         doRefresh();
     }
@@ -81,7 +78,7 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
         try {
             doRefresh();
         } catch (Exception e) {
-            LOG.log(System.Logger.Level.WARNING, "Pool metric refresh failed", e);
+            log.error("Pool metric refresh failed", e);
         }
     }
 
@@ -138,19 +135,19 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
     }
 
     private static void registerAll(MeterRegistry registry, State state) {
-        gauge(registry, MetricNames.EXECUTOR_SIZE, state, ThreadPoolSnapshot::poolSize);
-        gauge(registry, MetricNames.EXECUTOR_CORE, state, ThreadPoolSnapshot::coreSize);
-        gauge(registry, MetricNames.EXECUTOR_MAX, state, ThreadPoolSnapshot::maxSize);
-        gauge(registry, MetricNames.EXECUTOR_LARGEST, state, ThreadPoolSnapshot::largestPoolSize);
-        gauge(registry, MetricNames.EXECUTOR_ACTIVE, state, ThreadPoolSnapshot::activeCount);
-        gauge(registry, MetricNames.EXECUTOR_QUEUE_SIZE, state, ThreadPoolSnapshot::queueSize);
-        gauge(registry, MetricNames.EXECUTOR_QUEUE_REMAINING, state,
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_SIZE, state, ThreadPoolSnapshot::poolSize);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_CORE, state, ThreadPoolSnapshot::coreSize);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_MAX, state, ThreadPoolSnapshot::maxSize);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_LARGEST, state, ThreadPoolSnapshot::largestPoolSize);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_ACTIVE, state, ThreadPoolSnapshot::activeCount);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_QUEUE_SIZE, state, ThreadPoolSnapshot::queueSize);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_QUEUE_REMAINING, state,
                 s -> s.hasUnboundedQueue() ? Double.NaN : s.remainingCapacity());
-        gauge(registry, MetricNames.EXECUTOR_QUEUE_CAPACITY, state,
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_QUEUE_CAPACITY, state,
                 s -> s.hasUnboundedQueue() ? Double.NaN : (double) s.queueSize() + s.remainingCapacity());
-        gauge(registry, MetricNames.EXECUTOR_TASKS, state, ThreadPoolSnapshot::taskCount);
-        gauge(registry, MetricNames.EXECUTOR_COMPLETED, state, ThreadPoolSnapshot::completedTaskCount);
-        gauge(registry, MetricNames.EXECUTOR_KEEP_ALIVE, state,
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_TASKS, state, ThreadPoolSnapshot::taskCount);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_COMPLETED, state, ThreadPoolSnapshot::completedTaskCount);
+        gauge(registry, MetricNames.EXECUTOR.EXECUTOR_KEEP_ALIVE, state,
                 s -> s.keepAlive().toNanos() / 1_000_000_000d, "seconds");
         statusGauge(registry, state, "shutdown", ThreadPoolSnapshot::shutdown);
         statusGauge(registry, state, "terminating", ThreadPoolSnapshot::terminating);
@@ -181,7 +178,7 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
 
     private static void statusGauge(MeterRegistry registry, State state, String status,
                                     Predicate<ThreadPoolSnapshot> active) {
-        state.meters.add(Gauge.builder(MetricNames.EXECUTOR_STATUS, state,
+        state.meters.add(Gauge.builder(MetricNames.EXECUTOR.EXECUTOR_STATUS, state,
                         s -> s.snapshot != null && active.test(s.snapshot) ? 1d : 0d)
                 .tag("pool", state.name)
                 .tag("state", status)
@@ -190,8 +187,8 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
 
     private static void registerRejectedCounter(MeterRegistry registry, State state) {
         state.rejectedMeter = FunctionCounter.builder(
-                        MetricNames.EXECUTOR_REJECTED, state, State::rejectedTotal)
-                .description("Cumulative number of tasks rejected by the pool")
+                        MetricNames.EXECUTOR.EXECUTOR_REJECTED, state, State::rejectedTotal)
+                .description("任务拒绝次数")
                 .tag("pool", state.name)
                 .register(registry);
     }
@@ -204,7 +201,7 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
         if (state.infoMeter != null) {
             registry.remove(state.infoMeter);
         }
-        state.infoMeter = Gauge.builder(MetricNames.EXECUTOR_INFO, state, s -> 1d)
+        state.infoMeter = Gauge.builder(MetricNames.EXECUTOR.EXECUTOR_INFO, state, s -> 1d)
                 .tags(tags)
                 .register(registry);
         state.infoTags = tags;
@@ -266,7 +263,6 @@ public final class ThreadPoolMetricsBinder implements MeterBinder, AutoCloseable
                 return;
             }
             if (raw < lastRejected) {
-                // A new handler restarted its counter; keep the exported value monotonic.
                 rejectedOffset += lastRejected;
             }
             lastRejected = raw;

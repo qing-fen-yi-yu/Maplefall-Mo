@@ -1,7 +1,7 @@
 package com.guilu.sys;
 
-import com.guilu.monitor.domain.SystemDetailMetricsInfo;
-import com.guilu.monitor.domain.SystemMetricsInfo;
+import com.guilu.domain.SystemDetailMetricsInfo;
+import com.guilu.domain.SystemMetricsInfo;
 import oshi.SystemInfo;
 import oshi.hardware.CentralProcessor;
 import oshi.hardware.GlobalMemory;

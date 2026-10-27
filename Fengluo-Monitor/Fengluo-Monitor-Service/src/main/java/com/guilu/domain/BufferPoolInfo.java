@@ -1,4 +1,4 @@
-package com.guilu.monitor.domain;
+package com.guilu.domain;
 
 public record BufferPoolInfo(
         String name, // buffer pool 名称

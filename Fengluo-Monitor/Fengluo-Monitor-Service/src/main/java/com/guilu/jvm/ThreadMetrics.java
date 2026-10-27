@@ -1,6 +1,6 @@
 package com.guilu.jvm;
 import com.guilu.MXBean;
-import com.guilu.monitor.domain.ThreadMetricsInfo;
+import com.guilu.domain.ThreadMetricsInfo;
 import java.lang.management.*;
 import java.util.*;
 

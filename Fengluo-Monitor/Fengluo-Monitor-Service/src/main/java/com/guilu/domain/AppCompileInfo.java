@@ -1,4 +1,4 @@
-package com.guilu.monitor.domain;
+package com.guilu.domain;
 
 import com.guilu.MXBean;
 import lombok.Getter;
