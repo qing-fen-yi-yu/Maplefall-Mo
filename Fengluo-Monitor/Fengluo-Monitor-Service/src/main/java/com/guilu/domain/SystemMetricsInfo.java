@@ -1,4 +1,4 @@
-package com.guilu.monitor.domain;
+package com.guilu.domain;
 
 /**
  * 采集时刻的操作系统与 JVM 进程。

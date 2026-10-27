@@ -1,4 +1,4 @@
-package com.guilu.monitor.domain;
+package com.guilu.domain;
 
 /**
  * GC 指标信息，时间默认以ms显示

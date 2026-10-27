@@ -1,5 +1,5 @@
 package com.guilu.jvm;
-import com.guilu.monitor.domain.GcEventInfo;
+import com.guilu.domain.GcEventInfo;
 import com.sun.management.GarbageCollectionNotificationInfo;
 import javax.management.*;
 import javax.management.openmbean.CompositeData;

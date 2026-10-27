@@ -1,9 +1,9 @@
 package com.guilu.jvm;
 
 import com.guilu.MXBean;
-import com.guilu.monitor.domain.BufferPoolInfo;
-import com.guilu.monitor.domain.MemoryPoolInfo;
-import com.guilu.monitor.domain.MemoryPoolInfo.ThresholdInfo;
+import com.guilu.domain.BufferPoolInfo;
+import com.guilu.domain.MemoryPoolInfo;
+import com.guilu.domain.MemoryPoolInfo.ThresholdInfo;
 
 import java.lang.management.BufferPoolMXBean;
 import java.lang.management.MemoryMXBean;

@@ -1,4 +1,4 @@
-package com.guilu.monitor.domain;
+package com.guilu.domain;
 
 import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;

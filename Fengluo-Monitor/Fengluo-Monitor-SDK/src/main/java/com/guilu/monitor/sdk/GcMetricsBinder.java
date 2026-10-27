@@ -1,7 +1,7 @@
 package com.guilu.monitor.sdk;
 
 import com.guilu.jvm.GcEventMonitor;
-import com.guilu.monitor.domain.GcEventInfo;
+import com.guilu.domain.GcEventInfo;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.MeterBinder;
@@ -46,7 +46,7 @@ public final class GcMetricsBinder implements MeterBinder, AutoCloseable {
                     safeTag(event.collector(), "N"),
                     safeTag(event.cause(), "N"),
                     safeTag(event.action(), "N"));
-            Timer timer = timerCache.computeIfAbsent(key, k -> Timer.builder(MetricNames.JVM_GC_EVENT)
+            Timer timer = timerCache.computeIfAbsent(key, k -> Timer.builder(MetricNames.JVM.JVM_GC_EVENT)
                     .tags("collector", k.get(0), "cause", k.get(1), "action", k.get(2))
                     .description("JVM GC 回收器、原因及行为统计")
                     .publishPercentiles(0.5, 0.95, 0.99)

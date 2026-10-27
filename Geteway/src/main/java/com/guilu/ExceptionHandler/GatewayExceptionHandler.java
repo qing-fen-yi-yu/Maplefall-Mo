@@ -6,6 +6,7 @@ import com.guilu.exception.BusinessException.CommonException;
 import com.guilu.exception.BusinessException.UnLoginException;
 import com.guilu.exception.RequestException.ForbiddenException;
 import com.guilu.exception.RequestException.UnauthorizedException;
+import com.guilu.exceptionHandler.annotations.GlobalChainHandler;
 import com.guilu.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
@@ -32,11 +33,11 @@ import static com.guilu.constants.ResultInfo.Msg.SERVER_INTER_ERROR;
  */
 @Slf4j
 @Component
+@GlobalChainHandler
 public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordered {
 
     @Override
     public Mono<Void> handle(ServerWebExchange exchange, Throwable ex) {
-        log.info("网关异常处理器");
         // 1.获取响应
         ServerHttpResponse response = exchange.getResponse();
         // 2.判断是否已处理
@@ -44,7 +45,6 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
             // 如果已经提交，直接结束，避免重复处理
             return Mono.error(ex);
         }
-        // 3.按照异常类型进行翻译处理
         String message;
         int code = FAILED;
         if (ex instanceof UnLoginException) {
@@ -52,15 +52,13 @@ public class GatewayExceptionHandler implements ErrorWebExceptionHandler, Ordere
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             code = e.getCode() == null ? HttpStatus.UNAUTHORIZED.value() : e.getCode();
             message = e.getMessage();
-        } else if (ex instanceof UnauthorizedException) {
+        } else if (ex instanceof UnauthorizedException e) {
             // 未登录/未授权，返回401
-            UnauthorizedException e = (UnauthorizedException) ex;
             response.setStatusCode(HttpStatus.UNAUTHORIZED);
             code = e.getCode() == null ? HttpStatus.UNAUTHORIZED.value() : e.getCode();
             message = e.getMessage();
-        } else if (ex instanceof ForbiddenException) {
+        } else if (ex instanceof ForbiddenException e) {
             // 无访问权限，返回403
-            ForbiddenException e = (ForbiddenException) ex;
             response.setStatusCode(HttpStatus.FORBIDDEN);
             code = HttpStatus.FORBIDDEN.value();
             message = e.getMessage();

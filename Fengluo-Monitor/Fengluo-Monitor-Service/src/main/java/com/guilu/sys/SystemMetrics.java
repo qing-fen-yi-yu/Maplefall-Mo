@@ -1,7 +1,7 @@
 package com.guilu.sys;
 import com.guilu.MXBean;
-import com.guilu.monitor.domain.SystemDetailMetricsInfo;
-import com.guilu.monitor.domain.SystemMetricsInfo;
+import com.guilu.domain.SystemDetailMetricsInfo;
+import com.guilu.domain.SystemMetricsInfo;
 import java.lang.management.OperatingSystemMXBean;
 //系统指标监听器
 public final class SystemMetrics {
