@@ -3,8 +3,6 @@ package com.guilu.Manager;
 import com.guilu.Manager.updater.AutoDestroyTP;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.SmartLifecycle;
-import org.springframework.core.Ordered;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -15,10 +13,9 @@ public class PoolLifecycle implements SmartLifecycle {
     //线程池关闭的最大等待事件
     private static final long AWAIT_SECONDS = 5L;
 
-    // 高 phase 在关闭时先停止，在 Bean 销毁之前执行。
     @Override
     public int getPhase() {
-        return Ordered.LOWEST_PRECEDENCE;
+        return Integer.MAX_VALUE - 10;
     }
 
     private volatile boolean running = false;

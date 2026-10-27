@@ -3,6 +3,7 @@ package com.guilu.DynamicThreadPool;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
+import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 import com.guilu.domain.po.ThreadPool.ThreadPoolConfig;
 import com.guilu.enums.BlockingQueueType;
 import com.guilu.enums.PoolStatus;
@@ -10,6 +11,7 @@ import com.guilu.enums.RejectHandlerType;
 import com.guilu.exception.BusinessException.BadDataException;
 import org.springframework.util.StringUtils;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -45,15 +47,26 @@ public class DynamicPool extends ThreadPoolExecutor {
     }
 
     private static BlockingQueue<Runnable> createBlockingType(String blockingQueueType, Integer blockingQueueSize) {
-        BlockingQueue<Runnable> blockingQueue = BlockingQueueType.of(blockingQueueType, blockingQueueSize);
-        if(blockingQueue == null){
-            throw new BadDataException("阻塞队列值错误");
+        try {
+            BlockingQueue<Runnable> blockingQueue = BlockingQueueType.of(blockingQueueType, blockingQueueSize);
+            if (blockingQueue == null) {
+                throw new BadDataException("阻塞队列值错误");
+            }
+            return blockingQueue;
+        } catch (IllegalArgumentException e) {
+            throw new BadDataException("阻塞队列容量值错误: " + blockingQueueSize);
         }
-        return blockingQueue;
     }
 
     private static TimeUnit creatTimeUnit(String timeUnit) {
-        return TimeUnit.valueOf(timeUnit);
+        if (!StringUtils.hasText(timeUnit)) {
+            throw new BadDataException("时间单位不能为空");
+        }
+        try {
+            return TimeUnit.valueOf(timeUnit.trim().toUpperCase(Locale.ROOT));
+        } catch (IllegalArgumentException e) {
+            throw new BadDataException("时间单位值错误: " + timeUnit);
+        }
     }
 
     private static RejectedExecutionHandler createRejectHandler(String rejectHandler) {
@@ -82,7 +95,10 @@ public class DynamicPool extends ThreadPoolExecutor {
         return super.getPoolSize();
     }
     public String getRejectHandler() {
-        return super.getRejectedExecutionHandler().getClass().getSimpleName(); //获取线程池执行策略
+        RejectedExecutionHandler handler = super.getRejectedExecutionHandler();
+        return handler instanceof DynamicRejectHandler dynamic
+                ? dynamic.getType().name()
+                : handler.getClass().getSimpleName(); //获取线程池执行策略
     }
     public ThreadFactory getThreadFactory() {
         return super.getThreadFactory(); //获取线程创建工厂
@@ -95,12 +111,12 @@ public class DynamicPool extends ThreadPoolExecutor {
         return getQueue().getClass().getSimpleName();
     }
     public String getTimeUnit() {
-        return timeUnit.toString();
+        return timeUnit == null ? null : timeUnit.toString();
     }
     public String getThreadPoolName() {
         return this.threadName;
     }
-    public long getThreadId() {
+    public Long getThreadId() {
         return this.threadId;
     }
     public long getTaskCount() {

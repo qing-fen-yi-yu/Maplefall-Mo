@@ -1,9 +1,11 @@
 package com.guilu.config;
 
 import com.guilu.Manager.reporter.PoolReporter;
-import com.guilu.monitor.sdk.ExecutorPoolMetrics;
-import com.guilu.monitor.sdk.GcEventMetrics;
+import com.guilu.metrics.PoolReporterSnapshotSource;
+import com.guilu.monitor.sdk.GcMetricsBinder;
 import com.guilu.monitor.sdk.JvmSupplementMetrics;
+import com.guilu.monitor.sdk.spi.ThreadPoolSnapshotSource;
+import com.guilu.properties.MonitorMetricsProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.*;
@@ -19,26 +21,32 @@ import org.springframework.context.annotation.Bean;
 @ConditionalOnClass({MeterRegistry.class, JvmSupplementMetrics.class})
 @ConditionalOnProperty(prefix = "monitor.metrics", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class MonitorMetricsAutoConfiguration {
+
     @Bean
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "monitor.metrics",
             name = "jvm-enabled",
             havingValue = "true", matchIfMissing = true)
-    public JvmSupplementMetrics fengluoJvmMetrics() { return new JvmSupplementMetrics(); }
+    public JvmSupplementMetrics fengluoJvmMetrics(MonitorMetricsProperties properties) {
+        return new JvmSupplementMetrics(properties.getJvmRefreshInterval(),
+                properties.isSysDetailInfo());
+    }
 
     @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean
     @ConditionalOnProperty(prefix = "monitor.metrics", name = "gc-enabled",
             havingValue = "true", matchIfMissing = true)
-    public GcEventMetrics fengluoGcMetrics() { return new GcEventMetrics(); }
+    public GcMetricsBinder fengluoGcMetrics() {
+        return new GcMetricsBinder();
+    }
 
-    @Bean(destroyMethod = "close")
+    @Bean
+    @ConditionalOnClass(PoolReporter.class)
     @ConditionalOnBean(PoolReporter.class)
-    @ConditionalOnMissingBean
+    @ConditionalOnMissingBean(ThreadPoolSnapshotSource.class)
     @ConditionalOnProperty(prefix = "monitor.metrics",
             name = "executor-enabled", havingValue = "true", matchIfMissing = true)
-    public ExecutorPoolMetrics fengluoExecutorMetrics(PoolReporter reporter,
-                      MonitorMetricsProperties properties) {
-        return new ExecutorPoolMetrics(reporter::snapshot, properties.getExecutorRefreshInterval());
+    public ThreadPoolSnapshotSource fengluoThreadPoolSnapshotSource(PoolReporter reporter) {
+        return new PoolReporterSnapshotSource(reporter);
     }
 }

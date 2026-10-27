@@ -1,4 +1,4 @@
-package com.guilu.domain;
+package com.guilu.monitor.domain;
 
 /**
  * 采集时刻的操作系统与 JVM 进程。
@@ -7,7 +7,7 @@ package com.guilu.domain;
  * @param arch                   系统架构
  * @param version                系统版本
  * @param availableProcessors    JVM可用处理器数量
- * @param systemLoadAverage      最近 1 分钟系统平均负载
+ * @param systemLoadAverage      最近 1 分钟系统平均负载(unix)
  * @param systemCpuLoad          CPU使用率
  * @param processCpuLoad         JVM进程cpu使用率
  * @param processCpuTime         JVM进程累计cpu时间单位纳秒

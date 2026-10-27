@@ -1,4 +1,5 @@
-package com.guilu.domain;
+package com.guilu.monitor.domain;
+
 import java.lang.management.MemoryUsage;
 import java.util.Map;
 

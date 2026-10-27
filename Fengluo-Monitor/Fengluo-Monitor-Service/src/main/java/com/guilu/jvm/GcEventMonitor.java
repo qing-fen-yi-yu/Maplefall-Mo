@@ -1,5 +1,5 @@
 package com.guilu.jvm;
-import com.guilu.domain.GcEventInfo;
+import com.guilu.monitor.domain.GcEventInfo;
 import com.sun.management.GarbageCollectionNotificationInfo;
 import javax.management.*;
 import javax.management.openmbean.CompositeData;
@@ -33,20 +33,25 @@ public final class GcEventMonitor implements AutoCloseable {
             close(); throw e;
         }
     }
-    private synchronized void accept(Notification notification) {
-        if (closed || !GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION.equals(notification.getType())
-                || !(notification.getUserData() instanceof CompositeData data)) return;
-        GarbageCollectionNotificationInfo notificationInfo = GarbageCollectionNotificationInfo.from(data);
-        com.sun.management.GcInfo gc = notificationInfo.getGcInfo();
-        GcEventInfo event = new GcEventInfo(
-                notificationInfo.getGcName(), notificationInfo.getGcAction(),
-                notificationInfo.getGcCause(), gc.getId(), gc.getStartTime(), gc.getEndTime(), gc.getDuration(),
-                gc.getMemoryUsageBeforeGc(), gc.getMemoryUsageAfterGc());
-        latest.put(event.collector(), event);
+    private void accept(Notification notification) {
+        GcEventInfo event;
+        synchronized (this) {
+            if (closed || !GarbageCollectionNotificationInfo.GARBAGE_COLLECTION_NOTIFICATION.equals(notification.getType())
+                    || !(notification.getUserData() instanceof CompositeData data)) {
+                return;
+            }
+            GarbageCollectionNotificationInfo notificationInfo = GarbageCollectionNotificationInfo.from(data);
+            com.sun.management.GcInfo gc = notificationInfo.getGcInfo();
+            event = new GcEventInfo(
+                    notificationInfo.getGcName(), notificationInfo.getGcAction(),
+                    notificationInfo.getGcCause(), gc.getId(), gc.getStartTime(), gc.getEndTime(),
+                    gc.getDuration(), gc.getMemoryUsageBeforeGc(), gc.getMemoryUsageAfterGc());
+            latest.put(event.collector(), event);
+        }
+        // 消费者在锁外执行，避免指标记录阻塞 GC 通知的其它监听器。
         try {
             consumer.accept(event);
-        }
-        catch (RuntimeException e) {
+        } catch (RuntimeException e) {
             System.getLogger(GcEventMonitor.class.getName())
                     .log(System.Logger.Level.WARNING, "GC consumer failed", e);
         }

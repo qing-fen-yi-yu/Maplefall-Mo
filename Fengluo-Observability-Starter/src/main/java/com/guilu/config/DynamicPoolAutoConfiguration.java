@@ -14,7 +14,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 
-/** Owns pool registration, queries, updates and lifecycle; metrics are registered separately. */
 @AutoConfiguration
 @ConditionalOnProperty(prefix="monitor.threadpool.dynamic", name="enabled", havingValue="true")
 public class DynamicPoolAutoConfiguration {
