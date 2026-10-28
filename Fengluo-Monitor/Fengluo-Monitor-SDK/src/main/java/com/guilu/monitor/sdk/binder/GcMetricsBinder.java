@@ -1,10 +1,12 @@
-package com.guilu.monitor.sdk;
+package com.guilu.monitor.sdk.binder;
 
 import com.guilu.jvm.GcEventMonitor;
 import com.guilu.domain.GcEventInfo;
+import com.guilu.monitor.sdk.constants.MetricNames;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.MeterBinder;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -15,10 +17,8 @@ import java.util.concurrent.TimeUnit;
 /**
  * GC 事件指标绑定器。
  */
+@Slf4j
 public final class GcMetricsBinder implements MeterBinder, AutoCloseable {
-
-    private static final System.Logger LOG =
-            System.getLogger(GcMetricsBinder.class.getName());
 
     private final Map<MeterRegistry, GcEventMonitor> monitors = new IdentityHashMap<>();
     private final Map<MeterRegistry, Map<List<String>, Timer>> timers = new IdentityHashMap<>();
@@ -53,7 +53,7 @@ public final class GcMetricsBinder implements MeterBinder, AutoCloseable {
                     .register(registry));
             timer.record(event.duration(), TimeUnit.MILLISECONDS);
         } catch (RuntimeException e) {
-            LOG.log(System.Logger.Level.WARNING, "GC event metric failed", e);
+            log.warn("GC event metric failed", e);
         }
     }
 

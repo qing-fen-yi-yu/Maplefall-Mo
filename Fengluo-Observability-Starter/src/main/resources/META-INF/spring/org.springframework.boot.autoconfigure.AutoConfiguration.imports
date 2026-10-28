@@ -4,3 +4,4 @@ com.guilu.config.ThreadPoolMetricsAutoConfiguration
 com.guilu.config.JvmExtrasAutoConfiguration
 com.guilu.config.GlobalExceptionAutoConfiguration
 com.guilu.config.ObservabilityAutoConfiguration
+com.guilu.config.LoggingMetricsAutoConfiguration

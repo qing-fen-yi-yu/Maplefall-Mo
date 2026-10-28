@@ -53,6 +53,18 @@
       "defaultValue": false
     },
     {
+      "name": "monitor.metrics.logging.metrics-type",
+      "type": "com.guilu.monitor.sdk.binder.logging.enums.LoggingMetricType",
+      "description": "开启的指标类型（扩展类型包含默认指标）",
+      "defaultValue": "default"
+    },
+    {
+      "name": "monitor.metrics.logging.enabled",
+      "description": "是否开启日志采集",
+      "type": "java.lang.Boolean",
+      "defaultValue": false
+    },
+    {
       "name": "monitor.exception.enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用异常监控",

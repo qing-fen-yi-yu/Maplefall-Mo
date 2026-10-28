@@ -1,4 +1,4 @@
-package com.guilu.monitor.sdk;
+package com.guilu.monitor.sdk.constants;
 
 public interface MetricNames {
     interface EXECUTOR{

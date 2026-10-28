@@ -65,10 +65,17 @@ monitor:
   exception:
     enabled: true
   jvm:
-    basic:
-      enabled: false
     extras:
       enabled: false
+  metrics:
+    enabled: true
+    logging:
+      enabled: true
+      metrics-type: default
+    gc-enabled: true
+    executor-enabled: true
+    jvm-enabled: true
+    logging-enabled: true
 management:
   endpoints:
     web:
