@@ -71,7 +71,8 @@ monitor:
     enabled: true
     logging:
       enabled: true
-      metrics-type: default
+      metrics-type: BASICEXPAND
+      log-cap: 3000
     gc-enabled: true
     executor-enabled: true
     jvm-enabled: true

@@ -1,12 +1,9 @@
 package com.guilu.config;
 
-import ch.qos.logback.classic.Logger;
-import ch.qos.logback.classic.LoggerContext;
+import com.guilu.monitor.sdk.binder.logging.ExpandAppender;
 import com.guilu.monitor.sdk.binder.logging.enums.LoggingMetricType;
 import com.guilu.monitor.sdk.binder.logging.AbstractLoggingBinder;
-import com.guilu.monitor.sdk.binder.logging.CustomerAppender;
-import com.guilu.monitor.sdk.binder.logging.DefaultMetricsBinder;
-import com.guilu.monitor.sdk.binder.logging.ExpandMetricsBinder;
+import com.guilu.monitor.sdk.binder.logging.BasicExpandMetricsBinder;
 import com.guilu.properties.MonitorMetricsProperties;
 import io.micrometer.core.instrument.MeterRegistry;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
@@ -21,23 +18,23 @@ import org.springframework.core.Ordered;
 @AutoConfiguration
 @EnableConfigurationProperties(MonitorMetricsProperties.class)
 @ConditionalOnClass(MeterRegistry.class)
-@ConditionalOnProperty(prefix = "monitor.logging", name = "enabled",
+@ConditionalOnProperty(prefix = "monitor.metrics.logging", name = "enabled",
         havingValue = "true", matchIfMissing = true)
 public class LoggingMetricsAutoConfiguration implements Ordered {
 
-    @Bean
+    @Bean(destroyMethod = "close")
     @ConditionalOnMissingBean(AbstractLoggingBinder.class)
     public AbstractLoggingBinder loggingBinder(MonitorMetricsProperties props) {
-        LoggingMetricType type = props.getMetricType();
+        LoggingMetricType type = props.getLogging().getMetricsType();
         AbstractLoggingBinder binder = null;
-        if (type == LoggingMetricType.EXPAND) {
-            binder = new ExpandMetricsBinder();
-        } else {
-            binder = new DefaultMetricsBinder();
-        }
+        binder = new BasicExpandMetricsBinder();
         return binder;
     }
 
+    @Bean
+    public ExpandAppender expandAppender(MonitorMetricsProperties props) {
+        return new ExpandAppender(props.getLogging().getLogCap());
+    }
     @Override
     public int getOrder() {
         return Ordered.LOWEST_PRECEDENCE;

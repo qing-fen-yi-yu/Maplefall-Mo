@@ -65,6 +65,12 @@
       "defaultValue": false
     },
     {
+      "name": "monitor.metrics.logging.log-cap",
+      "description": "可记录日志快照容量",
+      "type": "java.lang.Integer",
+      "defaultValue": 1500
+    },
+    {
       "name": "monitor.exception.enabled",
       "type": "java.lang.Boolean",
       "description": "是否启用异常监控",
