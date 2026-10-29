@@ -1,6 +1,6 @@
 package com.guilu.config;
 
-import com.guilu.monitor.sdk.ThreadPoolMetricsBinder;
+import com.guilu.monitor.sdk.binder.ThreadPoolMetricsBinder;
 import com.guilu.monitor.sdk.spi.ThreadPoolSnapshotSource;
 import com.guilu.properties.MonitorMetricsProperties;
 import io.micrometer.core.instrument.MeterRegistry;

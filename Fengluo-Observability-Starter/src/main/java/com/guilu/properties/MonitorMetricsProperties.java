@@ -1,19 +1,27 @@
 package com.guilu.properties;
 
-import lombok.Getter;
-import lombok.Setter;
+import com.guilu.monitor.sdk.binder.logging.enums.LoggingMetricType;
+import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import java.time.Duration;
 
-@Getter
-@Setter
+@Data
 @ConfigurationProperties("monitor.metrics")
 public class MonitorMetricsProperties {
-    private boolean enabled = true; // 开启所有的指标指标采集，如果此处为false则下面的其它指标都不讲进行注册
-    private boolean jvmEnabled = true; // jvm指标采集
-    private boolean gcEnabled = true; //Gc指标采集
-    private boolean executorEnabled = true; //线程池指标采集
-    private boolean sysDetailInfo = false; //系统详细信息采集，默认不采集，使用简略信息
+    private boolean enabled = true;
+    private boolean jvmEnabled = true;
+    private boolean gcEnabled = true;
+    private boolean executorEnabled = true;
+    private boolean sysDetailInfo = false;
     private Duration executorRefreshInterval = Duration.ofSeconds(10);
-    private Duration jvmRefreshInterval = Duration.ofSeconds(10); // 系统/死锁/明细数据的缓存有效期
+    private Duration jvmRefreshInterval = Duration.ofSeconds(10);
+
+    private Logging logging = new Logging();
+
+    @Data
+    public static class Logging {
+        private boolean enabled = false;
+        private LoggingMetricType metricsType = LoggingMetricType.BASICEXPAND;
+        private int logCap = 1500;
+    }
 }

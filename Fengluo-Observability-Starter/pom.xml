@@ -16,7 +16,6 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <micrometer-jvm-extras.version>0.2.2</micrometer-jvm-extras.version>
     </properties>
 
     <dependencies>
@@ -31,34 +30,15 @@
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- JVM 指标 -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-actuator</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.micrometer</groupId>
-            <artifactId>micrometer-registry-prometheus</artifactId>
-        </dependency>
-
-
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <groupId>io.github.mweirauch</groupId>
-            <artifactId>micrometer-jvm-extras</artifactId>
-            <version>${micrometer-jvm-extras.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
