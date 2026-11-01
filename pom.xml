@@ -17,15 +17,15 @@
         <module>Fengluo-Monitor</module>
         <module>Geteway</module>
         <module>FengLuo-Api</module>
+        <module>Fengluo-Monitor</module>
         <module>Fengluo-Monitor/Fengluo-Monitor-SDK</module>
         <module>Fengluo-Monitor/Fengluo-Monitor-Service</module>
         <module>Fengluo-Auth</module>
         <module>Fengluo-User</module>
         <module>Fengluo-Notice</module>
-        <module>Fengluo-Task</module>
         <module>Fengluo-Search</module>
         <module>Fengluo-Observability-Starter</module>
-        <module>Fengluo-Config</module>
+        <module>Fengluo-TPAndTaskConfig</module>
         <module>Fengluo_DynamicTP</module>
         <module>Fengluo-Event</module>
     </modules>

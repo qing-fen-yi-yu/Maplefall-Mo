@@ -1,5 +1,5 @@
 server:
-  port: 10030
+  port: 10010
   servlet:
     session:
       timeout: 30m
@@ -9,7 +9,7 @@ server:
     uri-encoding: UTF-8   #服务编码
 spring:
   application:
-    name: TaskApplication
+    name: TaskTpConfigApplication
   cloud:
     nacos:
       config:
@@ -35,7 +35,7 @@ spring:
       - dev
 fl:
   redis:
-    host: ${server.sql-ip} # Redis地址
+    host: ${server.sql-ip}  # Redis地址
     password: ''            # 若无密码则留空
     pool:
       max-active: 8
@@ -45,19 +45,16 @@ fl:
   mysql:
     host: ${server.sql-ip}
     port: ${server.port.mysql}
-    database: fl_task
+    database: fl_task_tp
     username: guilu
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   mq:
-    host: ${server.sql-ip}
+    host: ${server.sql-ip}:${server.port.mq}
     port: ${server.port.mq}
     vhost: /maplefall
     username: guilu
     password: 123
-  auth:
-    resource:
-      enable: true
 monitor:
   threadpool:
     dynamic:
@@ -66,17 +63,12 @@ monitor:
     enabled: true
   jvm:
     extras:
-      enabled: false
-  metrics:
+      enabled: true
+  banner:
     enabled: true
+  metrics:
     logging:
       enabled: true
-      metrics-type: BASICEXPAND
-      log-cap: 3000
-    gc-enabled: true
-    executor-enabled: true
-    jvm-enabled: true
-    logging-enabled: true
 management:
   endpoints:
     web:
@@ -86,4 +78,7 @@ management:
     metrics:
       enabled: true
     prometheus:
+      enabled: true
+  observations:
+    annotations:
       enabled: true

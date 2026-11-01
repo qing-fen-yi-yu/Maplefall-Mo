@@ -66,7 +66,7 @@ public class AccountAuthFilter implements GlobalFilter, Ordered {
         String token = authHeaders == null ? "" : authHeaders.get(0);
         Result<LoginUserDTO> r = authUtil.parseToken(token);
 
-        // 4.如果用户是登录状态，更新请求头传递用户信息（重新赋值 exchange）
+        // 4.如果用户是登录状态，更新请求头传递用户信息
         if (r.isLoginStatus()) {
             exchange = exchange.mutate()
                     .request(builder ->
