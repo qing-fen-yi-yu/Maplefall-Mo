@@ -17,7 +17,6 @@
         <module>Fengluo-Monitor</module>
         <module>Geteway</module>
         <module>FengLuo-Api</module>
-        <module>Fengluo-Monitor</module>
         <module>Fengluo-Monitor/Fengluo-Monitor-SDK</module>
         <module>Fengluo-Monitor/Fengluo-Monitor-Service</module>
         <module>Fengluo-Auth</module>

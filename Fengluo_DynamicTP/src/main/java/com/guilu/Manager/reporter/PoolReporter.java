@@ -2,7 +2,10 @@ package com.guilu.Manager.reporter;
 
 import com.guilu.Manager.PoolManager;
 import com.guilu.domain.DynamicPoolSnapshot;
+import com.guilu.utils.JsonUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 
 import java.util.HashMap;
@@ -36,5 +39,14 @@ public class PoolReporter extends PoolManager{
 
     private DynamicPoolSnapshot buildSnapshot(String registryName, Executor executor) {
         return DynamicPoolSnapshot.collectPoolData(registryName, executor);
+    }
+    //序列化线程池快照为json字符串
+    public String snapshotAsJson() {
+        try {
+            return JsonUtils.toJsonStr(snapshot());
+        } catch (Exception e) {
+            log.error("序列化线程池快照失败", e);
+            return null;
+        }
     }
 }
