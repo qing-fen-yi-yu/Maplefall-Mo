@@ -34,8 +34,8 @@ public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
 
     public DynamicPoolSnapshot(String name, Integer coreSize, Integer maxSize, Integer poolSize,
                                Integer activeCount, Integer queueSize, Integer remainingCapacity,
-                               Long completedTasks, String rejectHandler) {
-        super(name, coreSize, maxSize, poolSize, activeCount, queueSize, remainingCapacity, completedTasks, rejectHandler);
+                               Long completedTasks, String rejectHandler,Long avgTime,Long totalTime,Long numTasks) {
+        super(name, coreSize, maxSize, poolSize, activeCount, queueSize, remainingCapacity, completedTasks, rejectHandler,avgTime,totalTime,numTasks);
     }
 
     public DynamicPoolSnapshot(String name, Integer coreSize, Integer maxSize, Integer poolSize,
@@ -46,7 +46,7 @@ public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
                                Long taskCount, long keepAliveTime, Integer largestPoolSize) {
         this(name, coreSize, maxSize, poolSize, activeCount, queueSize, remainingCapacity, completedTasks,
                 rejectHandler, threadId, threadName, timeUnit, poolStatus, queueType, taskCount,
-                keepAliveTime, largestPoolSize, -1L);
+                keepAliveTime, largestPoolSize, -1L,-1L,-1L,-1L);
     }
 
     public DynamicPoolSnapshot(String name, Integer coreSize, Integer maxSize, Integer poolSize,
@@ -55,8 +55,8 @@ public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
                                Long threadId, String threadName, TimeUnit timeUnit,
                                Map<PoolStatus, Boolean> poolStatus, String queueType,
                                Long taskCount, long keepAliveTime, Integer largestPoolSize,
-                               Long rejectedTasks) {
-        super(name, coreSize, maxSize, poolSize, activeCount, queueSize, remainingCapacity, completedTasks, rejectHandler);
+                               Long rejectedTasks,Long avgTime,Long totalTime,Long numTasks) {
+        super(name, coreSize, maxSize, poolSize, activeCount, queueSize, remainingCapacity, completedTasks, rejectHandler,avgTime,totalTime,numTasks);
         this.threadId = threadId;
         this.threadName = threadName;
         this.timeUnit = timeUnit;
@@ -68,7 +68,6 @@ public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
         this.rejectedTasks = rejectedTasks == null ? -1L : rejectedTasks;
     }
 
-    /** Common snapshot for reporter and metrics consumers. Unsupported executor types return null. */
     public static DynamicPoolSnapshot collectPoolData(String registryName, Executor executor) {
         Objects.requireNonNull(registryName, "registryName");
         Objects.requireNonNull(executor, "executor");
@@ -85,12 +84,30 @@ public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
         String threadName = dynamic == null || dynamic.getThreadPoolName() == null
                 ? registryName : dynamic.getThreadPoolName();
         long rejected = handler instanceof RejectionStatsSource stats ? stats.rejectedCount() : -1L;
+        Long avgTime = null;
+        Long totalTime = null;
+        Long numTasks = null;
+        if (dynamic != null) {
+            avgTime = dynamic.getAvgTaskTimeNanos();
+            totalTime = dynamic.getTotalTimeNanos();
+            numTasks = dynamic.getNumTasks();
+        }
+        if(avgTime == null){
+            avgTime = -1L;
+        }
+        if(totalTime == null){
+            totalTime = -1L;
+        }
+        if(numTasks == null){
+            numTasks = -1L;
+        }
         return new DynamicPoolSnapshot(registryName, pool.getCorePoolSize(), pool.getMaximumPoolSize(),
                 pool.getPoolSize(), pool.getActiveCount(), pool.getQueue().size(),
                 pool.getQueue().remainingCapacity(), pool.getCompletedTaskCount(),
                 handlerName(handler), dynamic == null ? null : dynamic.getThreadId(),
                 threadName, unit, Map.copyOf(status), pool.getQueue().getClass().getSimpleName(),
-                pool.getTaskCount(), pool.getKeepAliveTime(unit), pool.getLargestPoolSize(), rejected);
+                pool.getTaskCount(), pool.getKeepAliveTime(unit), pool.getLargestPoolSize(), rejected,
+                avgTime, totalTime, numTasks);
     }
 
     public static DynamicPoolSnapshot collectPoolData(DynamicPool dynamicPool) {

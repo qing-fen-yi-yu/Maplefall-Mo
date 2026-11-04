@@ -1,5 +1,9 @@
 package com.guilu.config;
 
+import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
+import com.alibaba.cloud.nacos.registry.NacosRegistration;
+import com.alibaba.cloud.nacos.registry.NacosServiceRegistry;
+import com.guilu.DynamicTPConfig.TpMetaDataReporter;
 import com.guilu.Manager.PoolLifecycle;
 import com.guilu.Manager.inquirer.PoolInquirer;
 import com.guilu.Manager.register.PoolRegister;
@@ -51,5 +55,12 @@ public class DynamicPoolAutoConfiguration {
     @ConditionalOnMissingBean
     public UpdaterListener updaterListener() {
         return new UpdaterListener();
+    }
+    @Bean
+    @ConditionalOnMissingBean
+    public TpMetaDataReporter tpMetaDataReporter(PoolReporter poolReporter,
+                                                 NacosDiscoveryProperties properties,
+                                                 NacosServiceRegistry serviceRegistry, NacosRegistration registration) {
+        return new TpMetaDataReporter(poolReporter, properties, serviceRegistry, registration);
     }
 }

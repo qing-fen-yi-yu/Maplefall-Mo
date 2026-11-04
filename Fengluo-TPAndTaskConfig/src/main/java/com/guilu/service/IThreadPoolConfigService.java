@@ -1,7 +1,12 @@
 package com.guilu.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.guilu.domain.DynamicPoolSnapshot;
+import com.guilu.domain.dto.TPConfigPageQueryDto;
 import com.guilu.domain.po.ThreadPoolConfig;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
  * <p>
@@ -13,4 +18,9 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IThreadPoolConfigService extends IService<ThreadPoolConfig> {
 
+    Page<ThreadPoolConfig> pageQuery(TPConfigPageQueryDto queryDto);
+
+    List<DynamicPoolSnapshot> pageQueryAll();
+
+    ThreadPoolConfig getAllById(Long id);
 }

@@ -1,4 +1,4 @@
-package com.guilu.controller;
+package com.guilu.controller.Task;
 
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2026-10-12
  */
 @RestController
-@RequestMapping("/task-execution")
+@RequestMapping("/taskExecution")
 public class TaskExecutionController {
 
 }

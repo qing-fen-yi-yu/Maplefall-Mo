@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.guilu.enums.ThreadFactoryType;
 import lombok.Data;
 
 
@@ -32,7 +33,7 @@ public class ThreadPoolConfig implements Serializable {
 
     private Integer blockingQueueSize;
 
-    private String threadFactory;
+    private ThreadFactoryType threadFactory;
     private Long createUser;
     private LocalDateTime createTime;
     @TableField("`delete`")

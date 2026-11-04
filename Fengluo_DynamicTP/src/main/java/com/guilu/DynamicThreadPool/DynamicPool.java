@@ -4,16 +4,19 @@ import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
 import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
+import com.guilu.DynamicThreadPool.FLThreadFactory.DynamicThreadFactory;
 import com.guilu.domain.po.ThreadPool.ThreadPoolConfig;
 import com.guilu.enums.BlockingQueueType;
 import com.guilu.enums.PoolStatus;
 import com.guilu.enums.RejectHandlerType;
+import com.guilu.enums.ThreadFactoryType;
 import com.guilu.exception.BusinessException.BadDataException;
 import org.springframework.util.StringUtils;
 
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DynamicPool extends ThreadPoolExecutor {
     private final Long threadId;
@@ -38,14 +41,21 @@ public class DynamicPool extends ThreadPoolExecutor {
                 threadPoolConfig.getKeepAliveTime(),
                 creatTimeUnit(threadPoolConfig.getTimeUnit()),
                 createBlockingType(threadPoolConfig.getBlockingQueueType(), threadPoolConfig.getBlockingQueueSize()),
-                ThreadUtil.createThreadFactory(threadPoolConfig.getThreadFactory()),
+                createThreadFactory(threadPoolConfig.getThreadFactory()),
                 createRejectHandler(threadPoolConfig.getRejectHandler())
         );
         this.threadId = id;
         this.threadName = threadPoolConfig.getThreadPoolName();
         this.timeUnit = creatTimeUnit(threadPoolConfig.getTimeUnit());
     }
-
+    public static ThreadFactory createThreadFactory(ThreadFactoryType threadFactoryType) {
+        if(threadFactoryType == ThreadFactoryType.DYNAMIC)
+            return DynamicThreadFactory.getInstance();
+        else if(threadFactoryType.equals(ThreadFactoryType.DEFAULT))
+            return Executors.defaultThreadFactory();
+        else
+            return ThreadUtil.createThreadFactory(threadFactoryType.getFactoryName());
+    }
     private static BlockingQueue<Runnable> createBlockingType(String blockingQueueType, Integer blockingQueueSize) {
         try {
             BlockingQueue<Runnable> blockingQueue = BlockingQueueType.of(blockingQueueType, blockingQueueSize);
@@ -200,5 +210,41 @@ public class DynamicPool extends ThreadPoolExecutor {
             return;
         }
         throw new BadDataException("该队列不支持调整大小");
+    }
+
+    private final ThreadLocal<Long> startTime = new ThreadLocal<>();
+    private final AtomicLong numTasks = new AtomicLong();
+    private final AtomicLong totalTime = new AtomicLong();
+    //任务执行耗时信息记录
+    @Override
+    protected void beforeExecute(Thread t, Runnable r) {
+        super.beforeExecute(t, r);
+        startTime.set(System.nanoTime());
+    }
+
+    @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+        try {
+            Long start = startTime.get();
+            if (start != null) {
+                long taskTime = System.nanoTime() - start;
+                numTasks.incrementAndGet();
+                totalTime.addAndGet(taskTime);
+            }
+        } finally {
+            startTime.remove();
+            super.afterExecute(r, t);
+        }
+    }
+
+    public Long getNumTasks() {
+        return numTasks.get();
+    }
+    public Long getTotalTimeNanos() {
+        return totalTime.get();
+    }
+    public Long getAvgTaskTimeNanos()  {
+        Long n = numTasks.get();
+        return n == 0 ? 0 : totalTime.get() / n;
     }
 }

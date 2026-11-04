@@ -1,4 +1,4 @@
-package com.guilu.controller;
+package com.guilu.controller.Task;
 
 
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -7,14 +7,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * <p>
- * 动态线程池配置表 前端控制器
+ * 任务定义 前端控制器
  * </p>
  *
  * @author 归鹭
- * @since 2026-10-13
+ * @since 2026-10-12
  */
 @RestController
-@RequestMapping("/thread-pool-config")
-public class ThreadPoolConfigController {
+@RequestMapping("/taskDefinition")
+public class TaskDefinitionController {
 
 }
