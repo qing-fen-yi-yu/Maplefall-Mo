@@ -24,6 +24,7 @@ public class DynamicPoolTestConfig {
     public DynamicPool threadPoolExecutor2() {
         return getDynamicPool();
     }
+    @DynamicThreadPool
     @Bean("test2-2")
     public  DynamicPool dynamicThreadPool() {
         return getDynamicPool();

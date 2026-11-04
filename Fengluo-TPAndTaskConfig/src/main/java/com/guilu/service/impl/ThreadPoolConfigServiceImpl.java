@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,12 +40,12 @@ public class ThreadPoolConfigServiceImpl extends ServiceImpl<ThreadPoolConfigMap
     }
 
     @Override
-    public List<DynamicPoolSnapshot> pageQueryAll() {
-        List<Set<DynamicPoolSnapshot>> list = tpConfigListener.getDynamicPoolSnapshotMap().values().stream().toList();
-        if (list.isEmpty()) {
-            return CollUtils.emptyList();
+    public Map<String, Set<DynamicPoolSnapshot>> pageQueryAll() {
+        Map<String, Set<DynamicPoolSnapshot>> map = tpConfigListener.getDynamicPoolSnapshotMap();
+        if (map.isEmpty()) {
+            return CollUtils.emptyMap();
         }
-        return list.get(0).stream().toList();
+        return map;
     }
 
     @Override

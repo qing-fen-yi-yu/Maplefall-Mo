@@ -94,13 +94,14 @@ public class TPConfigListener {
                 }
                 Set<DynamicPoolSnapshot> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
                 set.addAll(tpSnapshot.values());
+                for (DynamicPoolSnapshot dynamicPoolSnapshot : set) {
+                    dynamicPoolSnapshot.setService(instanceKey);
+                }
                 dynamicPoolSnapshotMap.put(instanceKey, set);
             } catch (Exception e) {
                 log.error("拉取实例 {} 线程池数据失败", instanceKey, e);
             }
         }
-        log.info("刷新线程池数据完成, 共 {} 个实例", instanceMap.size());
-        log.info("当前线程池数据: {}", dynamicPoolSnapshotMap);
     }
 
     private void cleanExpired() {
@@ -127,14 +128,13 @@ public class TPConfigListener {
         String prefix = service + "@";
         return dynamicPoolSnapshotMap.entrySet().stream()
                 .filter(e -> e.getKey().startsWith(prefix))
-                .flatMap(e -> e.getValue()
-                        .stream().peek(tpsna -> tpsna.setService(service)))
-                .collect(Collectors.toList());
+                .flatMap(e -> e.getValue().stream())
+                .collect(Collectors.toSet());
     }
 
     public Collection<DynamicPoolSnapshot> getDynamicPoolSnapshotByService(String service, String host, Integer port) {
         Set<DynamicPoolSnapshot> set = dynamicPoolSnapshotMap.get(getService(service, host, port));
         return set == null ? Collections.emptyList() :
-                set.stream().peek(tpsna -> tpsna.setService(service)).collect(Collectors.toList());
+                new HashSet<>(set);
     }
 }

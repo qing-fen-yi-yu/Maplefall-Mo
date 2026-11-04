@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>
@@ -40,7 +42,7 @@ public class ThreadPoolConfigController {
     //todo
     @ApiOperation("查询所有线程池配置")
     @GetMapping("/get/all")
-    public Result<List<DynamicPoolSnapshot>> pageQueryAll() {
+    public Result<Map<String, Set<DynamicPoolSnapshot>>> pageQueryAll() {
         return Result.success(tpConfigService.pageQueryAll());
     }
 }

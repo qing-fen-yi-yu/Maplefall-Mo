@@ -7,6 +7,8 @@ import com.guilu.domain.po.ThreadPoolConfig;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>
@@ -20,7 +22,7 @@ public interface IThreadPoolConfigService extends IService<ThreadPoolConfig> {
 
     Page<ThreadPoolConfig> pageQuery(TPConfigPageQueryDto queryDto);
 
-    List<DynamicPoolSnapshot> pageQueryAll();
+    Map<String, Set<DynamicPoolSnapshot>> pageQueryAll();
 
     ThreadPoolConfig getAllById(Long id);
 }
