@@ -38,7 +38,7 @@ public class TpMetaDataReporter {
                 return;
             }
             Map<String, String> metadata = new HashMap<>(properties.getMetadata());
-            metadata.put(DynamicTPMetaKey.DYNAMIC_TP_KEY, json);
+            metadata.put(DynamicTPMetaKey.DYNAMIC_TP_SNAPSHOT_KEY, json);
             properties.setMetadata(metadata);
             serviceRegistry.register(registration);
         } catch (Exception e) {

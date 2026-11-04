@@ -2,12 +2,14 @@ package com.guilu.Manager;
 
 import com.guilu.exception.BusinessException.BadDataException;
 import com.guilu.exception.BusinessException.ThreadPoolException;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 public class PoolManager {
     static final Map<String, Executor> POOL_REGISTRY = new ConcurrentHashMap<>();
     static final Map<String, Executor> ALIVE_REGISTRY = new ConcurrentHashMap<>();
@@ -37,6 +39,7 @@ public class PoolManager {
         Executor previous = POOL_REGISTRY.putIfAbsent(name, pool);
         if (previous != null && previous != pool) throw new BadDataException("Duplicate pool name: " + name);
         ALIVE_REGISTRY.put(name, pool);
+        log.info("注册线程池{}", name);
         return previous;
     }
     protected static void incrementCount() {

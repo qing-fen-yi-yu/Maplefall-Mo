@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Setter
 @Getter
 public class DynamicPoolSnapshot extends DefaultPoolSnapshot {
-
+    private String service;
     private Long threadId;
     private String threadName;
     private TimeUnit timeUnit;
