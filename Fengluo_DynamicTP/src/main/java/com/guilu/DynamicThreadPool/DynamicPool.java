@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
 import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 import com.guilu.DynamicThreadPool.FLThreadFactory.DynamicThreadFactory;
-import com.guilu.domain.po.ThreadPool.ThreadPoolConfig;
+import com.guilu.domain.po.ThreadPool.CommonThreadPoolConfig;
 import com.guilu.enums.BlockingQueueType;
 import com.guilu.enums.PoolStatus;
 import com.guilu.enums.RejectHandlerType;
@@ -34,19 +34,22 @@ public class DynamicPool extends ThreadPoolExecutor {
         this.threadName = threadName;
         this.timeUnit = unit;
     }
-    public DynamicPool(ThreadPoolConfig threadPoolConfig, Long id){
+    public DynamicPool(CommonThreadPoolConfig threadPoolConfig, Long id){
         super(
-                threadPoolConfig.getCoreSize()
+                threadPoolConfig.getCorePoolSize()
                 , threadPoolConfig.getMaxPoolSize(),
-                threadPoolConfig.getKeepAliveTime(),
-                creatTimeUnit(threadPoolConfig.getTimeUnit()),
-                createBlockingType(threadPoolConfig.getBlockingQueueType(), threadPoolConfig.getBlockingQueueSize()),
+                threadPoolConfig.getKeepAliveSeconds(),
+                TimeUnit.SECONDS,
+                createBlockingType(threadPoolConfig.getBlockingQueueType(), threadPoolConfig.getQueueCapacity()),
                 createThreadFactory(threadPoolConfig.getThreadFactory()),
-                createRejectHandler(threadPoolConfig.getRejectHandler())
+                createRejectHandler(threadPoolConfig.getRejectedPolicy())
         );
         this.threadId = id;
-        this.threadName = threadPoolConfig.getThreadPoolName();
-        this.timeUnit = creatTimeUnit(threadPoolConfig.getTimeUnit());
+        this.threadName = threadPoolConfig.getPoolName();
+        this.timeUnit = TimeUnit.SECONDS;
+        if (threadPoolConfig.getAllowCoreThreadTimeout() != null) {
+            allowCoreThreadTimeOut(threadPoolConfig.getAllowCoreThreadTimeout() == 1);
+        }
     }
     public static ThreadFactory createThreadFactory(ThreadFactoryType threadFactoryType) {
         if(threadFactoryType == ThreadFactoryType.DYNAMIC)

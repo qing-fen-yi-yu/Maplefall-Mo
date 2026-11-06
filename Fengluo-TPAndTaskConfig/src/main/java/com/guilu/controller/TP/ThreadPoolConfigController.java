@@ -39,10 +39,10 @@ public class ThreadPoolConfigController {
     public Result<Page<ThreadPoolConfig>> pageQueryTpConfig(@RequestBody TPConfigPageQueryDto queryDto) {
         return Result.success(tpConfigService.pageQuery(queryDto));
     }
-    //todo
-    @ApiOperation("查询所有线程池配置")
-    @GetMapping("/get/all")
-    public Result<Map<String, Set<DynamicPoolSnapshot>>> pageQueryAll() {
-        return Result.success(tpConfigService.pageQueryAll());
+    @ApiOperation("添加线程池配置")
+    @PostMapping("/addTP")
+    public Result<Void> addTP(@RequestBody ThreadPoolConfig threadPoolConfig) {
+        tpConfigService.addTP(threadPoolConfig);
+        return Result.success();
     }
 }

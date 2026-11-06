@@ -5,8 +5,6 @@ import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 
-import java.util.concurrent.TimeUnit;
-
 //线程池配置更新器事件监听器
 @Slf4j
 public class UpdaterListener {
@@ -20,12 +18,6 @@ public class UpdaterListener {
             log.warn("线程池更新事件缺少配置，忽略: {}", event);
             return;
         }
-        String name = poolConfig.getThreadPoolName();
-        Integer maxPoolSize = poolConfig.getMaxPoolSize();
-        TimeUnit unit = poolConfig.getUnit();
-        Integer coreSize = poolConfig.getCoreSize();
-        Integer queueCapacity = poolConfig.getQueueCapacity();
-        Long keepAliveTime = poolConfig.getKeepAlive();
-        PoolUpdater.of().update(name, coreSize, maxPoolSize, keepAliveTime, unit, queueCapacity);
+        PoolUpdater.of().update(poolConfig);
     }
 }

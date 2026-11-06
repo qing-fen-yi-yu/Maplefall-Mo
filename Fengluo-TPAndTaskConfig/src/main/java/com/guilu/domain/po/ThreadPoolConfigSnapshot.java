@@ -4,9 +4,10 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import com.baomidou.mybatisplus.annotation.IdType;
 import java.time.LocalDateTime;
 import com.baomidou.mybatisplus.annotation.TableId;
-import java.io.Serializable;
+import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 import lombok.experimental.Accessors;
 
 /**
@@ -18,10 +19,11 @@ import lombok.experimental.Accessors;
  * @since 2026-10-13
  */
 @Data
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 @Accessors(chain = true)
-@TableName("thread_pool_config_snapshot")
-public class ThreadPoolConfigSnapshot implements Serializable {
+@TableName(value = "thread_pool_config_snapshot", excludeProperty = "poolName")
+public class ThreadPoolConfigSnapshot extends BaseThreadPoolConfig {
 
     private static final long serialVersionUID = 1L;
 
@@ -40,36 +42,6 @@ public class ThreadPoolConfigSnapshot implements Serializable {
      * 线程池配置版本号
      */
     private Integer version;
-
-    /**
-     * 核心线程数
-     */
-    private Integer corePoolSize;
-
-    /**
-     * 最大线程数
-     */
-    private Integer maxPoolSize;
-
-    /**
-     * 任务队列容量
-     */
-    private Integer queueCapacity;
-
-    /**
-     * 非核心线程空闲存活时间，单位秒
-     */
-    private Integer keepAliveSeconds;
-
-    /**
-     * 是否允许核心线程超时：0否，1是
-     */
-    private Integer allowCoreThreadTimeout;
-
-    /**
-     * 任务拒绝策略
-     */
-    private String rejectedPolicy;
 
     /**
      * 配置变更类型

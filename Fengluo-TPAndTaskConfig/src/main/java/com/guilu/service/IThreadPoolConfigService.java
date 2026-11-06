@@ -22,7 +22,5 @@ public interface IThreadPoolConfigService extends IService<ThreadPoolConfig> {
 
     Page<ThreadPoolConfig> pageQuery(TPConfigPageQueryDto queryDto);
 
-    Map<String, Set<DynamicPoolSnapshot>> pageQueryAll();
-
-    ThreadPoolConfig getAllById(Long id);
+    void addTP(ThreadPoolConfig threadPoolConfig);
 }

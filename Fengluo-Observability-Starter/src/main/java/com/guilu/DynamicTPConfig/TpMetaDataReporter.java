@@ -4,6 +4,7 @@ import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
 import com.alibaba.cloud.nacos.registry.NacosRegistration;
 import com.alibaba.cloud.nacos.registry.NacosServiceRegistry;
 import com.guilu.Manager.reporter.PoolReporter;
+import com.guilu.Manager.reporter.TPReporter;
 import com.guilu.constants.DynamicTPMetaKey;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -13,7 +14,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Slf4j
-public class TpMetaDataReporter {
+public class TpMetaDataReporter implements TPReporter {
 
     private final PoolReporter poolReporter;
     private final NacosDiscoveryProperties properties;
@@ -32,6 +33,11 @@ public class TpMetaDataReporter {
 
     @EventListener(ApplicationReadyEvent.class)
     public void reportOnce() {
+        reportTPMetaData();
+    }
+
+    @Override
+    public void reportTPMetaData() {
         try {
             String json = poolReporter.snapshotAsJson();
             if (json == null || json.isBlank()) {

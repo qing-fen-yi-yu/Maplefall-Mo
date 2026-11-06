@@ -1,7 +1,12 @@
 package com.guilu.service;
 
+import com.guilu.domain.DynamicPoolSnapshot;
+import com.guilu.domain.po.ThreadPoolConfig;
 import com.guilu.domain.po.ThreadPoolConfigSnapshot;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * <p>
@@ -13,4 +18,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
  */
 public interface IThreadPoolConfigSnapshotService extends IService<ThreadPoolConfigSnapshot> {
 
+    Map<String, Set<DynamicPoolSnapshot>> queryAll();
+
+    void TPConfigToSna(ThreadPoolConfig threadPoolConfig);
 }

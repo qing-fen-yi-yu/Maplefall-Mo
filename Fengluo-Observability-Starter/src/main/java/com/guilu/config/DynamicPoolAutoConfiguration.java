@@ -3,19 +3,23 @@ package com.guilu.config;
 import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
 import com.alibaba.cloud.nacos.registry.NacosRegistration;
 import com.alibaba.cloud.nacos.registry.NacosServiceRegistry;
+import com.guilu.DynamicTPConfig.TpConfigUpdater;
 import com.guilu.DynamicTPConfig.TpMetaDataReporter;
 import com.guilu.Manager.PoolLifecycle;
 import com.guilu.Manager.inquirer.PoolInquirer;
 import com.guilu.Manager.register.PoolRegister;
 import com.guilu.Manager.register.RegisterBeanPostProcessor;
 import com.guilu.Manager.reporter.PoolReporter;
+import com.guilu.Manager.reporter.TPReporter;
 import com.guilu.Manager.updater.PoolUpdater;
+import com.guilu.Manager.updater.TPUpdater;
 import com.guilu.Manager.updater.UpdaterListener;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.core.env.Environment;
 
 @AutoConfiguration
@@ -58,9 +62,14 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean
     @ConditionalOnMissingBean
-    public TpMetaDataReporter tpMetaDataReporter(PoolReporter poolReporter,
-                                                 NacosDiscoveryProperties properties,
-                                                 NacosServiceRegistry serviceRegistry, NacosRegistration registration) {
+    public TPReporter tpMetaDataReporter(PoolReporter poolReporter,
+                                         NacosDiscoveryProperties properties,
+                                         NacosServiceRegistry serviceRegistry, NacosRegistration registration) {
         return new TpMetaDataReporter(poolReporter, properties, serviceRegistry, registration);
+    }
+    @Bean
+    @ConditionalOnMissingBean
+    public TPUpdater tpConfigUpdater(ApplicationEventPublisher publisher, NacosRegistration registration){
+        return new TpConfigUpdater(publisher, registration);
     }
 }
