@@ -2,6 +2,8 @@ package com.guilu.Listener;
 
 import cn.hutool.core.lang.TypeReference;
 import com.guilu.domain.DynamicPoolSnapshot;
+import com.guilu.instance.AbstractInstanceManager;
+import com.guilu.instance.InstanceManager;
 import com.guilu.utils.JsonUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -19,18 +21,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class TPConfigListener {
+public class TPConfigListener extends AbstractInstanceManager {
 
     private static final long ALIVE_TIME = 60000L;
-
+    private final InstanceManager instanceManager;
     @Getter
     private final Map<String, Set<DynamicPoolSnapshot>> dynamicPoolSnapshotMap = new ConcurrentHashMap<>();
-    private final DiscoveryClient discoveryClient;
-    private final Map<String, ServiceInstance> instanceMap = new ConcurrentHashMap<>();
-    private final Map<String, Long> instanceLastTime = new ConcurrentHashMap<>();
 
-    public TPConfigListener(DiscoveryClient discoveryClient) {
-        this.discoveryClient = discoveryClient;
+    public TPConfigListener(InstanceManager instanceManager) {
+        this.instanceManager = instanceManager;
+        instanceManager.register(this);
     }
 
     @EventListener(ApplicationReadyEvent.class)
@@ -40,41 +40,10 @@ public class TPConfigListener {
 
     @Scheduled(cron = "*/30 * * * * *")
     public void refreshInstanceAndSnapshot() {
-        initInstance();
         refreshData();
-        cleanExpired();
     }
-
-    private void initInstance() {
-        if (discoveryClient == null) {
-            log.error("discoveryClient is null");
-            return;
-        }
-        List<String> services = discoveryClient.getServices();
-        if (services == null || services.isEmpty()) {
-            log.warn("注册中心未返回服务列表，跳过本轮扫描");
-            return;
-        }
-        long now = System.currentTimeMillis();
-        for (String service : services) {
-            List<ServiceInstance> instances = discoveryClient.getInstances(service);
-            if (instances == null) {
-                continue;
-            }
-            for (ServiceInstance instance : instances) {
-                String instanceKey = getService(service, instance);
-                if(instance.getMetadata().containsKey(DynamicTPMetaKey.DYNAMIC_TP_SNAPSHOT_KEY)){
-                    instanceMap.put(instanceKey, instance);
-                    if(discoveryClient.getInstances(instanceKey.substring(0,instanceKey.indexOf("@"))) != null){
-                        instanceLastTime.put(instanceKey, now);
-                    }
-                }
-            }
-        }
-    }
-
     private void refreshData() {
-        for (Map.Entry<String, ServiceInstance> entry : instanceMap.entrySet()) {
+        for (Map.Entry<String, ServiceInstance> entry : instanceManager.getInstanceMap().entrySet()) {
             String instanceKey = entry.getKey();
             ServiceInstance instance = entry.getValue();
             try {
@@ -89,7 +58,7 @@ public class TPConfigListener {
                 Map<String, DynamicPoolSnapshot> tpSnapshot = JsonUtils.toBean(
                         json, new TypeReference<Map<String, DynamicPoolSnapshot>>() {});
                 if (tpSnapshot == null || tpSnapshot.isEmpty()) {
-                    log.warn("实例 {} 快照解析为空", instanceKey);
+//                    log.warn("实例 {} 快照解析为空", instanceKey);
                     continue;
                 }
                 Set<DynamicPoolSnapshot> set = Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -104,26 +73,6 @@ public class TPConfigListener {
         }
     }
 
-    private void cleanExpired() {
-        long now = System.currentTimeMillis();
-        for (Map.Entry<String, Long> entry : instanceLastTime.entrySet()) {
-            if (now - entry.getValue() > ALIVE_TIME) {
-                String key = entry.getKey();
-                instanceLastTime.remove(key);
-                instanceMap.remove(key);
-                dynamicPoolSnapshotMap.remove(key);
-            }
-        }
-    }
-
-    public String getService(String serviceName, String host, Integer port) {
-        return String.format("%s@%s:%d", serviceName, host, port);
-    }
-
-    public String getService(String serviceName, ServiceInstance instance) {
-        return getService(serviceName, instance.getHost(), instance.getPort());
-    }
-
     public Collection<DynamicPoolSnapshot> getDynamicPoolSnapshotByService(String service) {
         String prefix = service + "@";
         return dynamicPoolSnapshotMap.entrySet().stream()
@@ -133,8 +82,13 @@ public class TPConfigListener {
     }
 
     public Collection<DynamicPoolSnapshot> getDynamicPoolSnapshotByService(String service, String host, Integer port) {
-        Set<DynamicPoolSnapshot> set = dynamicPoolSnapshotMap.get(getService(service, host, port));
+        Set<DynamicPoolSnapshot> set = dynamicPoolSnapshotMap.get(instanceManager.getService(service, host, port));
         return set == null ? Collections.emptyList() :
                 new HashSet<>(set);
+    }
+
+    @Override
+    public void clear(Collection<String> removeInstance) {
+        removeInstance.forEach(dynamicPoolSnapshotMap::remove);
     }
 }

@@ -2,6 +2,7 @@ package com.guilu.DynamicTPConfig;
 
 import com.guilu.Event.TPConfigUpdaterEvent;
 import com.guilu.Manager.updater.TPUpdater;
+import com.guilu.client.TPUpdaterClient;
 import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.Manager.updater.PoolUpdater;
@@ -18,6 +19,7 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class TpConfigUpdater implements TPUpdater {
     private final ApplicationEventPublisher publisher;
     private final NacosRegistration registration;
+    private final TPUpdaterClient client;
 
     @Override
     public boolean publishTPConfigEvent(TPConfigUpdaterEvent event) {
@@ -28,13 +30,14 @@ public class TpConfigUpdater implements TPUpdater {
         if ((config.getService() != null && !config.getService().equals(registration.getServiceId()))
                 || (config.getHost() != null && !config.getHost().equals(registration.getHost()))
                 || (config.getPort() != null && config.getPort() != registration.getPort())) {
-            //todo 跨服务分发线程池更新配置
+            return client.publishTPConfigEvent(event);
         }
         // 冻结事件参数，防止调用方在事务提交前继续修改配置对象。
         PoolUpdateConfig copy = new PoolUpdateConfig();
         BeanUtils.copyProperties(config, copy);
         PoolUpdater.of().validate(copy);
         TPConfigUpdaterEvent pending = new TPConfigUpdaterEvent(event.getSource(), copy);
+        //判断是否在事务中发布若是则推迟事务的发布避免造成数据的写入回滚
         if (TransactionSynchronizationManager.isActualTransactionActive()
                 && TransactionSynchronizationManager.isSynchronizationActive()) {
             TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

@@ -58,3 +58,7 @@ fl:
   auth:
     resource:
       enable: false
+monitor:
+  threadpool:
+    dynamic:
+      enabled: true

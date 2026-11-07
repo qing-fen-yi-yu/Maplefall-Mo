@@ -7,6 +7,9 @@
       "name": "monitor.metrics",
       "type": "com.guilu.properties.MonitorMetricsProperties",
       "sourceType": "com.guilu.properties.MonitorMetricsProperties"
+    },
+    {
+      "name": "web.dispatch"
     }
   ],
   "properties": [
@@ -93,6 +96,12 @@
       "type": "java.lang.Boolean",
       "description": "是否开启OB初始化Banner",
       "defaultValue": true
+    },
+    {
+      "name": "web.dispatch.semaphore.size",
+      "type": "java.lang.Integer",
+      "description": "支持的并发请求数",
+      "defaultValue": 100
     }
   ]
 }

@@ -1,5 +1,7 @@
 package com.guilu.annotation;
 
+import org.springframework.core.annotation.AliasFor;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -9,6 +11,9 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD,ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DynamicThreadPool {
+    @AliasFor("name")
+    String value() default "";
+    @AliasFor("value")
     String name() default "";
     //是否扫描到后进行持久化存储
 //    boolean storage() default false;

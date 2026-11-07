@@ -14,6 +14,7 @@ import com.guilu.Manager.reporter.TPReporter;
 import com.guilu.Manager.updater.PoolUpdater;
 import com.guilu.Manager.updater.TPUpdater;
 import com.guilu.Manager.updater.UpdaterListener;
+import com.guilu.client.TPUpdaterClient;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -69,7 +70,7 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean
     @ConditionalOnMissingBean
-    public TPUpdater tpConfigUpdater(ApplicationEventPublisher publisher, NacosRegistration registration){
-        return new TpConfigUpdater(publisher, registration);
+    public TPUpdater tpConfigUpdater(ApplicationEventPublisher publisher, NacosRegistration registration, TPUpdaterClient tpUpdaterClient){
+        return new TpConfigUpdater(publisher, registration, tpUpdaterClient);
     }
 }
