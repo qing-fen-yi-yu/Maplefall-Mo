@@ -7,6 +7,7 @@ import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import com.guilu.enums.RejectHandlerType;
 import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 
+import java.util.Collection;
 import java.util.Objects;
 
 import java.util.concurrent.*;
@@ -31,7 +32,9 @@ public class PoolUpdater extends PoolManager {
     public void update(BaseThreadPoolConfig config) {
         applyConfig(config, true);
     }
-
+    public void update(Collection<BaseThreadPoolConfig> configs) {
+        configs.forEach(this::update);
+    }
     public void validate(BaseThreadPoolConfig config) {
         applyConfig(config, false);
     }

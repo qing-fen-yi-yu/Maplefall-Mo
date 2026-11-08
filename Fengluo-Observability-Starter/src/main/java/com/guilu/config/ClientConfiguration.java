@@ -1,5 +1,6 @@
 package com.guilu.config;
 
+import com.guilu.EventPublisher.FLSpringEventPublisher;
 import com.guilu.Manager.updater.PoolUpdater;
 import com.guilu.client.RequestPoint.PoolClientRequestPoint;
 import com.guilu.client.TPUpdaterClient;
@@ -25,13 +26,6 @@ public class ClientConfiguration {
     public TPUpdaterClient tpUpdaterClient(InstanceManager instanceManager, PoolUpdater poolUpdater, WebDispatchClient webDispatchClient) {
         return new TPUpdaterClient(instanceManager, poolUpdater, webDispatchClient);
     }
-    @Bean("PoolClientRequestPoint")
-    @ConditionalOnMissingBean
-    @ConditionalOnProperty(prefix="monitor.threadpool.dynamic", name="enabled", havingValue="true")
-    public PoolClientRequestPoint poolClientRequestPoint(TPUpdaterClient tpUpdaterClient, InstanceManager instanceManager) {
-        return new PoolClientRequestPoint(tpUpdaterClient, instanceManager);
-    }
-
     @Bean
     public WebClient webClient(WebClient.Builder builder) {
         return builder

@@ -4,8 +4,10 @@ import com.guilu.constants.DynamicTPMetaKey;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
+import org.springframework.context.event.EventListener;
 import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 
@@ -100,5 +102,6 @@ public class InstanceManager {
     }
     public void register(AbstractInstanceManager instanceManager) {
         instanceManagers.add(instanceManager);
+        initInstance();
     }
 }

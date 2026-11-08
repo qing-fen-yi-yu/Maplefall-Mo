@@ -45,4 +45,10 @@ public class ThreadPoolConfigController {
         tpConfigService.addTP(threadPoolConfig);
         return Result.success();
     }
+    @ApiOperation("更新线程池配置")
+    @PostMapping("/updateTP")
+    public Result<Void> updateTP(@RequestBody ThreadPoolConfig threadPoolConfig) {
+        tpConfigService.updateTP(threadPoolConfig);
+        return Result.success();
+    }
 }

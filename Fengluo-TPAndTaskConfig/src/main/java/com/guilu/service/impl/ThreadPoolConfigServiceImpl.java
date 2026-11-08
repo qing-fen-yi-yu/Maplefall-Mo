@@ -64,6 +64,17 @@ public class ThreadPoolConfigServiceImpl extends ServiceImpl<ThreadPoolConfigMap
             updateTPConfig(threadPoolConfig);
         }
     }
+
+    //todo
+    @Override
+    @Transactional
+    public void updateTP(ThreadPoolConfig threadPoolConfig) {
+//        updateById(threadPoolConfig);
+        //保存当前配置快照
+//        snapshotService.TPConfigToSna(threadPoolConfig);
+        updateTPConfig(threadPoolConfig);
+    }
+
     private void updateTPConfig(ThreadPoolConfig threadPoolConfig){
         boolean accepted = tpUpdater.publishTPConfigEvent(new TPConfigUpdaterEvent(
                 this.getClass().getName()+"-"+ TPConstant.TP_CONFIG_UPD_EVENT,

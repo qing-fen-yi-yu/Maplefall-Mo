@@ -6,10 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.reactive.function.client.WebClientRequestException;
-
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -29,7 +26,8 @@ public class WebDispatchClient {
     private final ExecutorService dispatchPool = Executors.newFixedThreadPool(10);
 
     public List<CompletableFuture<WebClientResultInfo>> updateDispatch(List<ServiceInstance> instances, Object config, String header, String uri) {
-
+        log.info("调度请求, instances={} header={}, uri={}",
+                instances, header, uri);
         if (instances == null || instances.isEmpty()) {
             return List.of();
         }
@@ -49,8 +47,12 @@ public class WebDispatchClient {
                     }
                     try {
                         Boolean ok = webClient.post()
-                                .uri("http://{host}:{port}/{uri}",
-                                        inst.getHost(), inst.getPort(), uri)
+                                .uri(uriBuilder -> uriBuilder
+                                        .scheme("http")
+                                        .host(inst.getHost())
+                                        .port(inst.getPort())
+                                        .path(uri)
+                                        .build())
                                 .headers(headersConsumer)
                                 .bodyValue(config)
                                 .retrieve()

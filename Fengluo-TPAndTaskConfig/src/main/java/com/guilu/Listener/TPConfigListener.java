@@ -34,10 +34,6 @@ public class TPConfigListener extends AbstractInstanceManager {
     }
 
     @EventListener(ApplicationReadyEvent.class)
-    public void onApplicationReady() {
-        refreshInstanceAndSnapshot();
-    }
-
     @Scheduled(cron = "*/30 * * * * *")
     public void refreshInstanceAndSnapshot() {
         refreshData();

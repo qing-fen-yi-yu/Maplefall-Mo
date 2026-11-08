@@ -23,4 +23,6 @@ public interface IThreadPoolConfigService extends IService<ThreadPoolConfig> {
     Page<ThreadPoolConfig> pageQuery(TPConfigPageQueryDto queryDto);
 
     void addTP(ThreadPoolConfig threadPoolConfig);
+
+    void updateTP(ThreadPoolConfig threadPoolConfig);
 }
