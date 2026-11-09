@@ -2,7 +2,6 @@ package com.guilu.client.RequestPoint;
 
 import com.guilu.Constants.ClientConstant;
 import com.guilu.client.TPUpdaterClient;
-import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.instance.InstanceManager;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,8 +12,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Collection;
 
 @Slf4j
 @RestController
@@ -42,7 +39,7 @@ public class PoolClientRequestPoint {
     private boolean valiRequest(HttpServletRequest request) {
         String header = request.getHeader(ClientConstant.POINT_HEADER_REQUEST);
         String remote = request.getRemoteAddr() + ":" + request.getRemotePort();
-        if (header == null || instanceManager.getInstance(header).isEmpty()) {
+        if (!instanceManager.getCurAppName().equals(header)) {
             log.warn("非法线程池更新请求, header={}, remote={}", header, remote);
             return false;
         }

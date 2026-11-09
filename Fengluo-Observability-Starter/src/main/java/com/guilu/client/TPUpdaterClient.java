@@ -1,11 +1,8 @@
 package com.guilu.client;
 
-import com.guilu.Constants.ClientConstant;
-import com.guilu.DynamicTPConfig.TpConfigUpdater;
 import com.guilu.Event.TPConfigUpdaterEvent;
 import com.guilu.Event.TPRefreshEvent;
 import com.guilu.EventPublisher.AbstractEventPublisher;
-import com.guilu.EventPublisher.FLSpringEventPublisher;
 import com.guilu.Manager.updater.PoolUpdater;
 import com.guilu.client.Web.WebClientResultInfo;
 import com.guilu.client.Web.WebDispatchClient;
@@ -14,9 +11,7 @@ import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.exception.BusinessException.ThreadPoolException;
 import com.guilu.instance.InstanceManager;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 
 import java.util.Collection;
@@ -24,14 +19,19 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
-//todo 识别每个服务设置的前缀
 @Slf4j
-@RequiredArgsConstructor
 public class TPUpdaterClient extends AbstractTPUpdaterClient {
     private final InstanceManager instanceManager;
     private final PoolUpdater poolUpdater;
     private final WebDispatchClient webDispatchClient;
-    private final String UPDATE_POOL_URI = "/maple/pool/update";
+    private final String UPDATE_POOL_URI = super.getPrefix() + "/pool/update";
+
+    public TPUpdaterClient(InstanceManager instanceManager, PoolUpdater poolUpdater, WebDispatchClient webDispatchClient, String prefix) {
+        super(prefix);
+        this.instanceManager = instanceManager;
+        this.poolUpdater = poolUpdater;
+        this.webDispatchClient = webDispatchClient;
+    }
 
     @Override
     public boolean publishTPConfigEvent(TPConfigUpdaterEvent event) {
@@ -51,7 +51,7 @@ public class TPUpdaterClient extends AbstractTPUpdaterClient {
                         .equals(host) && port.equals(instance.getPort())));
             }
             List<CompletableFuture<WebClientResultInfo>> dispatchResult =
-                    webDispatchClient.updateDispatch(instances, poolConfig, instanceManager.getCurAppName(), UPDATE_POOL_URI);
+                    webDispatchClient.updateDispatch(instances, poolConfig, event.getPoolConfig().getService(), UPDATE_POOL_URI);
             for(CompletableFuture<WebClientResultInfo> future:dispatchResult){
                 WebClientResultInfo webClientResultInfo = future.get();
                 if(!webClientResultInfo.isSuccess()){

@@ -62,3 +62,8 @@ monitor:
   threadpool:
     dynamic:
       enabled: true
+web:
+  dispatch:
+    instance:
+      scan:
+        enabled: true

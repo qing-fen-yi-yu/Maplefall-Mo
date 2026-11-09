@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InstanceManager {
     @Getter
     private final String curAppName;
-
     private static final long ALIVE_TIME = 60000L;
 
     private final DiscoveryClient discoveryClient;
