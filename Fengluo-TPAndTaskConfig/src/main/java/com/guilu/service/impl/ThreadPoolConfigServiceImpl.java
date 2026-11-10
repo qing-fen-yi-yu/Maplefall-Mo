@@ -3,11 +3,14 @@ package com.guilu.service.impl;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.guilu.Constants.TPConstant;
 import com.guilu.Event.TPConfigUpdaterEvent;
+import com.guilu.Event.TPCreateEvent;
 import com.guilu.Manager.updater.TPUpdater;
 import com.guilu.domain.dto.TPConfigPageQueryDto;
+import com.guilu.domain.po.ThreadPool.PoolCreateConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.domain.po.ThreadPoolConfig;
 import com.guilu.domain.query.QueryPage;
+import com.guilu.enums.TPType;
 import com.guilu.mapper.ThreadPoolConfigMapper;
 import com.guilu.service.IThreadPoolConfigService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -65,14 +68,41 @@ public class ThreadPoolConfigServiceImpl extends ServiceImpl<ThreadPoolConfigMap
         }
     }
 
-    //todo
     @Override
     @Transactional
     public void updateTP(ThreadPoolConfig threadPoolConfig) {
-//        updateById(threadPoolConfig);
-        //保存当前配置快照
-//        snapshotService.TPConfigToSna(threadPoolConfig);
+        boolean b = updateById(threadPoolConfig);
+        if(b){
+//            保存成功则当前配置快照
+        snapshotService.TPConfigToSna(threadPoolConfig);
+        }
         updateTPConfig(threadPoolConfig);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteByIdWithSnapshot(Long id, Boolean withSnapshot) {
+        boolean b = removeById(id);
+        if(withSnapshot){
+            //删除成功才进行删除快照
+            if(b){
+                snapshotService.deleteByConfigId(id);
+            }
+        }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void enable(Long id) {
+        boolean update = lambdaUpdate().eq(ThreadPoolConfig::getEnabled, 0)
+                .set(ThreadPoolConfig::getEnabled, 1)
+                .eq(ThreadPoolConfig::getId, id).update();
+        if(update){
+            ThreadPoolConfig threadPoolConfig = getById(id);
+            TPType tpType = TPType.of(threadPoolConfig.getExecutorType());
+            tpUpdater.addTPConfig(new TPCreateEvent(this,
+                    PoolCreateConfig.of(threadPoolConfig,tpType,threadPoolConfig.getServiceName(),threadPoolConfig.getInstanceConfig())));
+        }
     }
 
     private void updateTPConfig(ThreadPoolConfig threadPoolConfig){

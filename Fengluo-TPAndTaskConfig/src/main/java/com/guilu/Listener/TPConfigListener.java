@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 @Component
 public class TPConfigListener extends AbstractInstanceManager {
 
-    private static final long ALIVE_TIME = 60000L;
     private final InstanceManager instanceManager;
     @Getter
     private final Map<String, Set<DynamicPoolSnapshot>> dynamicPoolSnapshotMap = new ConcurrentHashMap<>();
@@ -75,6 +74,9 @@ public class TPConfigListener extends AbstractInstanceManager {
                 .filter(e -> e.getKey().startsWith(prefix))
                 .flatMap(e -> e.getValue().stream())
                 .collect(Collectors.toSet());
+    }
+    public Collection<DynamicPoolSnapshot> getDynamicPoolSnapshotByService(String service, String instanceConfig) {
+        return getDynamicPoolSnapshotByService(service + "@" + instanceConfig);
     }
 
     public Collection<DynamicPoolSnapshot> getDynamicPoolSnapshotByService(String service, String host, Integer port) {

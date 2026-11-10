@@ -70,6 +70,9 @@ public class PoolRegister extends PoolManager {
         }
         return registerThreadPool(pool, null, null);
     }
+    public static boolean registerThreadPool(Object pool,String poolName) {
+        return doRegister(pool, poolName);
+    }
 
     private static boolean doRegister(Object pool, String poolName) {
         if (pool instanceof ThreadPoolTaskExecutor taskExecutor) {

@@ -1,6 +1,7 @@
 package com.guilu.DynamicTPConfig;
 
 import com.guilu.Event.TPConfigUpdaterEvent;
+import com.guilu.Event.TPCreateEvent;
 import com.guilu.Manager.updater.TPUpdater;
 import com.guilu.client.TPUpdaterClient;
 import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
@@ -56,5 +57,11 @@ public class TpConfigUpdater implements TPUpdater {
     public boolean updateTP(BaseThreadPoolConfig threadPoolConfig) {
         PoolUpdater.of().update(threadPoolConfig);
         return true;
+    }
+
+    @Override
+    public boolean addTPConfig(TPCreateEvent event) {
+        return PoolUpdater.of().add(createExecutorService(event.getCreateConfig()),
+                event.getCreateConfig().getPoolName());
     }
 }

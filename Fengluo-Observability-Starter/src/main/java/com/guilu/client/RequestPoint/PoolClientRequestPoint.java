@@ -1,7 +1,9 @@
 package com.guilu.client.RequestPoint;
 
 import com.guilu.Constants.ClientConstant;
+import com.guilu.Event.TPCreateEvent;
 import com.guilu.client.TPUpdaterClient;
+import com.guilu.domain.po.ThreadPool.PoolCreateConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.instance.InstanceManager;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +34,20 @@ public class PoolClientRequestPoint {
         boolean ok = client.updateTP(config);
         if (!ok) {
             log.warn("线程池配置更新未生效, poolName={}, config={}", config.getPoolName(), config);
+        }
+        return ok;
+    }
+    //接收线程池配置注册请求
+    @PostMapping("/register")
+    public boolean registerTP(@Valid @RequestBody PoolCreateConfig config,
+                            HttpServletRequest request) {
+        log.info("接收线程池配置注册请求, config={}", config);
+        if (!valiRequest(request)) {
+            return false;
+        }
+        boolean ok = client.addTPConfig(new TPCreateEvent(this,config));
+        if (!ok) {
+            log.warn("线程池配置注册未生效, poolName={}, config={}", config.getPoolName(), config);
         }
         return ok;
     }

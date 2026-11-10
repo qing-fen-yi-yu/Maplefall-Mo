@@ -25,4 +25,8 @@ public interface IThreadPoolConfigService extends IService<ThreadPoolConfig> {
     void addTP(ThreadPoolConfig threadPoolConfig);
 
     void updateTP(ThreadPoolConfig threadPoolConfig);
+
+    void deleteByIdWithSnapshot(Long id, Boolean withSnapshot);
+
+    void enable(Long id);
 }

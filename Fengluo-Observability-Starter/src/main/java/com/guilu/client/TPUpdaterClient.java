@@ -1,12 +1,14 @@
 package com.guilu.client;
 
 import com.guilu.Event.TPConfigUpdaterEvent;
+import com.guilu.Event.TPCreateEvent;
 import com.guilu.Event.TPRefreshEvent;
 import com.guilu.EventPublisher.AbstractEventPublisher;
 import com.guilu.Manager.updater.PoolUpdater;
 import com.guilu.client.Web.WebClientResultInfo;
 import com.guilu.client.Web.WebDispatchClient;
 import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
+import com.guilu.domain.po.ThreadPool.PoolCreateConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.exception.BusinessException.ThreadPoolException;
 import com.guilu.instance.InstanceManager;
@@ -17,6 +19,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 
 
 @Slf4j
@@ -69,6 +72,13 @@ public class TPUpdaterClient extends AbstractTPUpdaterClient {
         poolUpdater.update(threadPoolConfig);
         AbstractEventPublisher.publishEvent(new TPRefreshEvent(this));
         return true;
+    }
+
+    @Override
+    public boolean addTPConfig(TPCreateEvent event) {
+        PoolCreateConfig createConfig = event.getCreateConfig();
+        ExecutorService executorService = createExecutorService(createConfig);
+        return poolUpdater.add(executorService,createConfig.getPoolName());
     }
 
     public boolean updateTPs(@Valid Collection<BaseThreadPoolConfig> config) {

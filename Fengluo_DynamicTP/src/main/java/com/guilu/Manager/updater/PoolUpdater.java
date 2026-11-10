@@ -2,10 +2,12 @@ package com.guilu.Manager.updater;
 
 import com.guilu.Manager.PoolManager;
 import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
+import com.guilu.Manager.register.PoolRegister;
 import com.guilu.exception.BusinessException.ThreadPoolException;
 import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import com.guilu.enums.RejectHandlerType;
 import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
+import jakarta.annotation.Resource;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -20,7 +22,6 @@ public class PoolUpdater extends PoolManager {
     public void removePoolByBean(String name, Executor executor) {
         removePoolByRegis(name, executor);
     }
-
     /**
      * 动态更新线程池参数。null 字段表示保持不变，只有显式传入的值才会生效。
      */
@@ -143,5 +144,10 @@ public class PoolUpdater extends PoolManager {
                 pool.setRejectedExecutionHandler(handler);
             }
         }
+    }
+
+    public boolean add(ExecutorService executorService,String poolName) {
+        PoolRegister.registerThreadPool(executorService, poolName);
+        return true;
     }
 }
