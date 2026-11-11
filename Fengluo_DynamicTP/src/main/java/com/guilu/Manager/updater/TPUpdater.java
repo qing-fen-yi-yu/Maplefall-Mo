@@ -13,6 +13,7 @@ import com.guilu.enums.TPType;
 import com.guilu.enums.ThreadFactoryType;
 import com.guilu.utils.BeanUtils;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -23,7 +24,7 @@ public interface TPUpdater {
     //执行线程池的更新操作
     boolean updateTP(BaseThreadPoolConfig threadPoolConfig);
 
-    boolean addTPConfig(TPCreateEvent event);
+    boolean addTPConfig(TPCreateEvent event) throws ExecutionException, InterruptedException;
 
     default ExecutorService createExecutorService(PoolCreateConfig createConfig){
         TPType executorType = createConfig.getExecutorType();
@@ -52,4 +53,6 @@ public interface TPUpdater {
             throw new IllegalArgumentException("当前不支持的线程池类型");
         }
     }
+
+    void removeDynamicTP(String poolName, String serviceName, String instanceConfig) throws ExecutionException, InterruptedException;
 }

@@ -8,6 +8,8 @@ import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import com.guilu.enums.RejectHandlerType;
 import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 import jakarta.annotation.Resource;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -16,11 +18,23 @@ import java.util.concurrent.*;
 
 //线程池动态更新接收器
 public class PoolUpdater extends PoolManager {
-    private static final PoolUpdater INSTANCE = new PoolUpdater();
-    public static PoolUpdater of() { return INSTANCE; }
-    private PoolUpdater() {}
+    private final DefaultListableBeanFactory beanFactory;
+    public PoolUpdater(DefaultListableBeanFactory beanFactory) {
+        this.beanFactory = beanFactory;
+    }
     public void removePoolByBean(String name, Executor executor) {
         removePoolByRegis(name, executor);
+        removeBean(name);
+    }
+
+    public void removeByName(String name) {
+        removePoolByBean(name, null);
+    }
+    //卸载线程池bean
+    private void removeBean(String name) {
+        if(beanFactory.containsBean(name)){
+            beanFactory.removeBeanDefinition(name);
+        }
     }
     /**
      * 动态更新线程池参数。null 字段表示保持不变，只有显式传入的值才会生效。

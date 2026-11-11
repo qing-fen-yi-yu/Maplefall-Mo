@@ -44,11 +44,15 @@ public class PoolManager {
         COUNT.incrementAndGet();
     }
     protected static void removeExecutorByAlive(String name) {
+        ExecutorService executor = (ExecutorService) ALIVE_REGISTRY.get(name);
         ALIVE_REGISTRY.remove(name);
+        executor.shutdown();
     }
     protected synchronized void removePoolByRegis(String name, Object pool) {
         if (name == null || pool == null) return;
+        ExecutorService executor = (ExecutorService) pool;
+        executor.shutdown();
         ALIVE_REGISTRY.remove(name, pool);
-        POOL_REGISTRY.remove(name, pool);
+        COUNT.decrementAndGet();
     }
 }

@@ -5,6 +5,7 @@ import com.guilu.Constants.TPConstant;
 import com.guilu.Event.TPConfigUpdaterEvent;
 import com.guilu.Event.TPCreateEvent;
 import com.guilu.Manager.updater.TPUpdater;
+import com.guilu.client.TPUpdaterClient;
 import com.guilu.domain.dto.TPConfigPageQueryDto;
 import com.guilu.domain.po.ThreadPool.PoolCreateConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
@@ -19,12 +20,14 @@ import com.guilu.utils.UserContext;
 import com.guilu.exception.BusinessException.ThreadPoolException;
 import com.guilu.enums.RejectHandlerType;
 import com.guilu.utils.queryUtil.QueryCreateUtils;
+import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.concurrent.ExecutionException;
 
 /**
  * <p>
@@ -39,7 +42,8 @@ import java.time.LocalDateTime;
 public class ThreadPoolConfigServiceImpl extends ServiceImpl<ThreadPoolConfigMapper, ThreadPoolConfig> implements IThreadPoolConfigService {
     private final QueryCreateUtils<ThreadPoolConfig> queryCreateUtils = new QueryCreateUtils<>();
     private final IThreadPoolConfigSnapshotService snapshotService;
-    private final TPUpdater tpUpdater;
+    @Resource(type = TPUpdaterClient.class)
+    private  TPUpdater tpUpdater;
     @Override
     public Page<ThreadPoolConfig> pageQuery(TPConfigPageQueryDto queryDto) {
         QueryPage queryPage = queryDto.getPage();
@@ -81,19 +85,21 @@ public class ThreadPoolConfigServiceImpl extends ServiceImpl<ThreadPoolConfigMap
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteByIdWithSnapshot(Long id, Boolean withSnapshot) {
+    public void deleteByIdWithSnapshot(Long id, Boolean withSnapshot) throws ExecutionException, InterruptedException {
+        ThreadPoolConfig threadPoolConfig = getById(id);
         boolean b = removeById(id);
         if(withSnapshot){
             //删除成功才进行删除快照
             if(b){
                 snapshotService.deleteByConfigId(id);
+                tpUpdater.removeDynamicTP(threadPoolConfig.getPoolName(),threadPoolConfig.getServiceName(),threadPoolConfig.getInstanceConfig());
             }
         }
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void enable(Long id) {
+    public void enable(Long id) throws ExecutionException, InterruptedException {
         boolean update = lambdaUpdate().eq(ThreadPoolConfig::getEnabled, 0)
                 .set(ThreadPoolConfig::getEnabled, 1)
                 .eq(ThreadPoolConfig::getId, id).update();

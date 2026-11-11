@@ -1,8 +1,8 @@
 package com.guilu.client.RequestPoint;
 
 import com.guilu.Constants.ClientConstant;
+import com.guilu.DynamicTPConfig.TpConfigUpdater;
 import com.guilu.Event.TPCreateEvent;
-import com.guilu.client.TPUpdaterClient;
 import com.guilu.domain.po.ThreadPool.PoolCreateConfig;
 import com.guilu.domain.po.ThreadPool.PoolUpdateConfig;
 import com.guilu.instance.InstanceManager;
@@ -10,18 +10,16 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.concurrent.ExecutionException;
 
 @Slf4j
 @RestController
 @RequestMapping("/pool")
 @RequiredArgsConstructor
 public class PoolClientRequestPoint {
-
-    private final TPUpdaterClient client;
+    private final TpConfigUpdater updater;
     private final InstanceManager instanceManager;
 
     @PostMapping("/update")
@@ -31,7 +29,7 @@ public class PoolClientRequestPoint {
         if (!valiRequest(request)) {
             return false;
         }
-        boolean ok = client.updateTP(config);
+        boolean ok = updater.updateTP(config);
         if (!ok) {
             log.warn("线程池配置更新未生效, poolName={}, config={}", config.getPoolName(), config);
         }
@@ -40,16 +38,27 @@ public class PoolClientRequestPoint {
     //接收线程池配置注册请求
     @PostMapping("/register")
     public boolean registerTP(@Valid @RequestBody PoolCreateConfig config,
-                            HttpServletRequest request) {
+                            HttpServletRequest request) throws ExecutionException, InterruptedException {
         log.info("接收线程池配置注册请求, config={}", config);
         if (!valiRequest(request)) {
             return false;
         }
-        boolean ok = client.addTPConfig(new TPCreateEvent(this,config));
+        boolean ok = updater.addTPConfig(new TPCreateEvent(this,config));
         if (!ok) {
             log.warn("线程池配置注册未生效, poolName={}, config={}", config.getPoolName(), config);
         }
         return ok;
+    }
+
+    @PostMapping("/remove")
+    public boolean removeTP(@RequestParam String poolName,
+                            HttpServletRequest request) throws ExecutionException, InterruptedException {
+        log.info("接收线程池配置删除请求, poolName={}", poolName);
+        if (!valiRequest(request)) {
+            return false;
+        }
+        updater.removeDynamicTP(poolName,null,null);
+        return true;
     }
 
     private boolean valiRequest(HttpServletRequest request) {

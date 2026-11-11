@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * <p>
@@ -54,13 +55,13 @@ public class ThreadPoolConfigController {
 
     @ApiOperation("删除线程池配置")
     @DeleteMapping("/deleteTP/{id}/{withSnapshot}")
-    public Result<Void> deleteTP(@PathVariable Long id, @PathVariable Boolean withSnapshot) {
+    public Result<Void> deleteTP(@PathVariable Long id, @PathVariable Boolean withSnapshot) throws ExecutionException, InterruptedException {
         tpConfigService.deleteByIdWithSnapshot(id, withSnapshot);
         return Result.success();
     }
     @ApiOperation("启用线程池")
     @PutMapping("/enable/{id}")
-    public Result<Void> enable(@PathVariable Long id) {
+    public Result<Void> enable(@PathVariable Long id) throws ExecutionException, InterruptedException {
         tpConfigService.enable(id);
         return Result.success();
     }

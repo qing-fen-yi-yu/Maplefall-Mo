@@ -12,7 +12,10 @@ import java.util.concurrent.*;
 public class PoolLifecycle implements SmartLifecycle {
     //线程池关闭的最大等待事件
     private static final long AWAIT_SECONDS = 5L;
-
+    private final AutoDestroyTP autoDestroyTP;
+    public  PoolLifecycle(AutoDestroyTP autoDestroyTP) {
+        this.autoDestroyTP = autoDestroyTP;
+    }
     @Override
     public int getPhase() {
         return Integer.MAX_VALUE - 10;
@@ -23,7 +26,6 @@ public class PoolLifecycle implements SmartLifecycle {
     @Override
     public void start() {
         this.running = true;
-        AutoDestroyTP autoDestroyTP = AutoDestroyTP.of();
         autoDestroyTP.checkDown();
     }
 
@@ -41,7 +43,7 @@ public class PoolLifecycle implements SmartLifecycle {
     @Override
     public void stop(Runnable callback) {
         try {
-            AutoDestroyTP.of().stop();
+            autoDestroyTP.stop();
             doShutdownAll();
         } catch (Throwable t) {
             log.error("关闭线程池时发生异常", t);

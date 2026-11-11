@@ -11,11 +11,12 @@ import com.guilu.Manager.register.PoolRegister;
 import com.guilu.Manager.register.RegisterBeanPostProcessor;
 import com.guilu.Manager.reporter.PoolReporter;
 import com.guilu.Manager.reporter.TPReporter;
+import com.guilu.Manager.updater.AutoDestroyTP;
 import com.guilu.Manager.updater.PoolUpdater;
 import com.guilu.Manager.updater.TPUpdater;
 import com.guilu.Manager.updater.UpdaterListener;
-import com.guilu.client.TPUpdaterClient;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
+import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -33,8 +34,8 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean(name={"ThreadPoolUpdater", "dynamicPoolUpdater"})
     @ConditionalOnMissingBean
-    public PoolUpdater dynamicPoolUpdater() {
-        return PoolUpdater.of();
+    public PoolUpdater dynamicPoolUpdater(DefaultListableBeanFactory beanFactory) {
+        return new PoolUpdater(beanFactory);
     }
     @Bean(name={"ThreadPoolInquirer", "dynamicPoolInquirer"})
     @ConditionalOnMissingBean
@@ -48,8 +49,13 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean(name={"PoolInitAndDes", "dynamicPoolLifecycle"})
     @ConditionalOnMissingBean
-    public PoolLifecycle dynamicPoolLifecycle() {
-        return new PoolLifecycle();
+    public PoolLifecycle dynamicPoolLifecycle(AutoDestroyTP autoDestroyTP) {
+        return new PoolLifecycle(autoDestroyTP);
+    }
+    @Bean
+    @ConditionalOnMissingBean
+    public AutoDestroyTP autoDestroyTP(PoolUpdater poolUpdater) {
+        return new AutoDestroyTP(poolUpdater);
     }
     @Bean(name={"ThreadPoolRegister", "dynamicPoolRegister"})
     @ConditionalOnMissingBean
@@ -58,8 +64,8 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean("ThreadPoolConfigUpdateListener")
     @ConditionalOnMissingBean
-    public UpdaterListener updaterListener() {
-        return new UpdaterListener();
+    public UpdaterListener updaterListener(PoolUpdater poolUpdater) {
+        return new UpdaterListener(poolUpdater);
     }
     @Bean
     @ConditionalOnMissingBean
@@ -70,7 +76,7 @@ public class DynamicPoolAutoConfiguration {
     }
     @Bean
     @ConditionalOnMissingBean
-    public TPUpdater tpConfigUpdater(ApplicationEventPublisher publisher, NacosRegistration registration, TPUpdaterClient tpUpdaterClient){
-        return new TpConfigUpdater(publisher, registration, tpUpdaterClient);
+    public TPUpdater tpConfigUpdater(ApplicationEventPublisher publisher, PoolUpdater poolUpdater){
+        return new TpConfigUpdater(publisher, poolUpdater);
     }
 }

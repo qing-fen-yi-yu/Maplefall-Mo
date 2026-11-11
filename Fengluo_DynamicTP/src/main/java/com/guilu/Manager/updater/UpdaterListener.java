@@ -8,6 +8,10 @@ import org.springframework.context.event.EventListener;
 //线程池配置更新器事件监听器
 @Slf4j
 public class UpdaterListener {
+    private final PoolUpdater poolUpdater;
+    public UpdaterListener(PoolUpdater poolUpdater) {
+        this.poolUpdater = poolUpdater;
+    }
     @EventListener(TPConfigUpdaterEvent.class)
     public void updateThreadPool(TPConfigUpdaterEvent event) {
         if (event == null) {
@@ -18,6 +22,6 @@ public class UpdaterListener {
             log.warn("线程池更新事件缺少配置，忽略: {}", event);
             return;
         }
-        PoolUpdater.of().update(poolConfig);
+        poolUpdater.update(poolConfig);
     }
 }
