@@ -88,6 +88,10 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
         // 3. 同步注册，确保 Bean 初始化完成后即可查询和调参。
         if (!waitsRegisTP.isEmpty()) {
             PoolRegister.registerThreadPool(waitsRegisTP);
+            for (RegisPoolDto regisPoolDto : waitsRegisTP) {
+                ExecutorService executorService =  (ExecutorService) regisPoolDto.getPool();
+                beanFactory.registerSingleton(regisPoolDto.getBeanName(), executorService);
+            }
         }
 
         return bean;

@@ -34,11 +34,8 @@ public class PoolRegister extends PoolManager {
             String beanName = tp.getBeanName();
             Object pool = tp.getPool();
             DynamicThreadPool anno = tp.getAnno();
-            if(StringUtils.isBlank(beanName)){
-                regisRes = registerThreadPool(pool,anno);
-            } else {
-                regisRes = registerThreadPool(pool,anno,beanName);
-            }
+            tp.setBeanName(getPoolBeanName(pool,anno,beanName));
+            regisRes = registerThreadPool(pool,anno,beanName);
             if (regisRes) {
                 count++;
             } else {
@@ -55,13 +52,17 @@ public class PoolRegister extends PoolManager {
         if (pool == null) {
             return false;
         }
+        String name = getPoolBeanName(pool, anno, beanName);
+        return doRegister(pool, name);
+    }
+    private static String getPoolBeanName(Object pool, DynamicThreadPool anno,String beanName){
         // 显式注解名  > DynamicPool 自带名称 > 获取/生成线程池名称。
         String name = anno != null && StringUtils.isNotBlank(anno.name()) ? anno.name() : beanName;
         if (StringUtils.isBlank(name) && pool instanceof DynamicPool dynamicPool) {
             name = dynamicPool.getThreadPoolName();
         }
         if (StringUtils.isBlank(name)) name = RegisDefaultNameUtil.createThreadPoolName();
-        return doRegister(pool, name);
+        return name;
     }
 
     public static boolean registerDefaultThreadPool(Object pool) {

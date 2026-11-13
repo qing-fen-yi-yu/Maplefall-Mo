@@ -8,6 +8,7 @@ import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
 import com.guilu.enums.RejectHandlerType;
 import com.guilu.DynamicThreadPool.FLDynamicReject.DynamicRejectHandler;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 
@@ -17,6 +18,7 @@ import java.util.Objects;
 import java.util.concurrent.*;
 
 //线程池动态更新接收器
+@Slf4j
 public class PoolUpdater extends PoolManager {
     private final DefaultListableBeanFactory beanFactory;
     public PoolUpdater(DefaultListableBeanFactory beanFactory) {
@@ -161,7 +163,15 @@ public class PoolUpdater extends PoolManager {
     }
 
     public boolean add(ExecutorService executorService,String poolName) {
-        PoolRegister.registerThreadPool(executorService, poolName);
-        return true;
+        boolean regisRes = PoolRegister.registerThreadPool(executorService, poolName);
+        if(regisRes){
+            try {
+                beanFactory.registerSingleton(poolName, executorService);
+            } catch (IllegalStateException e) {
+                PoolRegister.removeExecutorByAlive(poolName);
+                log.error("更新器注册线程失败",e);
+            }
+        }
+        return regisRes;
     }
 }
