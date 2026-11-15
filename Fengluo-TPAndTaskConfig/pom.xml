@@ -24,7 +24,7 @@
         </dependency>
         <dependency>
             <groupId>com.fengluo</groupId>
-            <artifactId>FengLuo-Api</artifactId>
+            <artifactId>Fengluo-Api</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
@@ -65,15 +65,5 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-<!--        任务调度quartz-->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-quartz</artifactId>
-        </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.quartz-scheduler</groupId>-->
-<!--            <artifactId>quartz</artifactId>-->
-<!--            <version>2.3.0</version>-->
-<!--        </dependency>-->
     </dependencies>
 </project>

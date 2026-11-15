@@ -9,7 +9,7 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>Fengluo_DynamicTP</artifactId>
+    <artifactId>Fengluo-TaskDispatch</artifactId>
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
@@ -17,7 +17,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <dependencies>
-        <!-- 业务异常基类所在模块，确认它不重 -->
         <dependency>
             <groupId>com.fengluo</groupId>
             <artifactId>Fengluo-Common</artifactId>
@@ -27,6 +26,11 @@
             <groupId>com.fengluo</groupId>
             <artifactId>Fengluo-Event</artifactId>
             <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <!--        任务调度quartz-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-quartz</artifactId>
         </dependency>
     </dependencies>
 
