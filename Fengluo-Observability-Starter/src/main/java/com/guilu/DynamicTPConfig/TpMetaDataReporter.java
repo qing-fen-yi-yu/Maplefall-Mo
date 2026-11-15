@@ -3,6 +3,7 @@ package com.guilu.DynamicTPConfig;
 import com.alibaba.cloud.nacos.NacosDiscoveryProperties;
 import com.alibaba.cloud.nacos.registry.NacosRegistration;
 import com.alibaba.cloud.nacos.registry.NacosServiceRegistry;
+import com.guilu.Event.TPRefreshEvent;
 import com.guilu.Manager.reporter.PoolReporter;
 import com.guilu.Manager.reporter.TPReporter;
 import com.guilu.constants.DynamicTPMetaKey;
@@ -33,18 +34,28 @@ public class TpMetaDataReporter implements TPReporter {
 
     @EventListener(ApplicationReadyEvent.class)
     public void reportOnce() {
-        reportTPMetaData();
+        reportTPMetaData(false);
+    }
+    @EventListener(TPRefreshEvent.class)
+    public void refreshMetaData(){
+        log.info("刷新上报的线程池数据");
+        reportTPMetaData(true);
     }
 
     @Override
-    public void reportTPMetaData() {
+    public void reportTPMetaData(boolean type) {
         try {
             String json = poolReporter.snapshotAsJson();
             if (json == null || json.isBlank()) {
                 return;
             }
             Map<String, String> metadata = new HashMap<>(properties.getMetadata());
-            metadata.put(DynamicTPMetaKey.DYNAMIC_TP_SNAPSHOT_KEY, json);
+            if(!type){
+                metadata.put(DynamicTPMetaKey.DYNAMIC_TP_SNAPSHOT_KEY, json);
+            } else {
+                metadata.remove(DynamicTPMetaKey.DYNAMIC_TP_SNAPSHOT_KEY);
+                metadata.put(DynamicTPMetaKey.DYNAMIC_TP_SNAPSHOT_KEY, json);
+            }
             properties.setMetadata(metadata);
             serviceRegistry.register(registration);
         } catch (Exception e) {

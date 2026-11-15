@@ -1,6 +1,7 @@
 package com.guilu.service;
 
 import com.guilu.domain.DynamicPoolSnapshot;
+import com.guilu.domain.dto.TPConfigSnapshotQueryDto;
 import com.guilu.domain.po.ThreadPoolConfig;
 import com.guilu.domain.po.ThreadPoolConfigSnapshot;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -21,4 +22,10 @@ public interface IThreadPoolConfigSnapshotService extends IService<ThreadPoolCon
     Map<String, Set<DynamicPoolSnapshot>> queryAll();
 
     void TPConfigToSna(ThreadPoolConfig threadPoolConfig);
+
+    Set<DynamicPoolSnapshot> getConfigSnaByServiceName(TPConfigSnapshotQueryDto tpConfigSnapshotQueryDto);
+
+    void deleteByConfigId(Long id);
+
+    Set<ThreadPoolConfigSnapshot> queryByConfigId(Long poolConfigId);
 }

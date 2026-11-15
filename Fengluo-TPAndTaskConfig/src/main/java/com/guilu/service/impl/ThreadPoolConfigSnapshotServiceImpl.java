@@ -3,6 +3,7 @@ package com.guilu.service.impl;
 import com.guilu.Listener.TPConfigListener;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.guilu.domain.DynamicPoolSnapshot;
+import com.guilu.domain.dto.TPConfigSnapshotQueryDto;
 import com.guilu.domain.po.ThreadPoolConfig;
 import com.guilu.domain.po.ThreadPoolConfigSnapshot;
 import com.guilu.domain.po.ThreadPool.BaseThreadPoolConfig;
@@ -20,6 +21,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -75,5 +78,31 @@ public class ThreadPoolConfigSnapshotServiceImpl extends ServiceImpl<ThreadPoolC
         if (!save(snapshot)) {
             throw new ThreadPoolException("保存线程池配置快照失败: " + configId);
         }
+    }
+
+    @Override
+    public Set<DynamicPoolSnapshot> getConfigSnaByServiceName(TPConfigSnapshotQueryDto tpConfigSnapshotQueryDto) {
+        Set<DynamicPoolSnapshot> snapshots = new HashSet<>();
+        if(tpConfigSnapshotQueryDto.getServiceName().isBlank()){
+            throw new ThreadPoolException("服务名称不能为空");
+        }
+        if(tpConfigSnapshotQueryDto.getInstanceConfig().isBlank()){
+            snapshots.addAll(tpConfigListener.getDynamicPoolSnapshotByService(tpConfigSnapshotQueryDto.getServiceName(),tpConfigSnapshotQueryDto.getInstanceConfig()));
+        } else {
+            snapshots.addAll(tpConfigListener.getDynamicPoolSnapshotByService(tpConfigSnapshotQueryDto.getServiceName(),tpConfigSnapshotQueryDto.getInstanceConfig()));
+        }
+        return snapshots;
+    }
+
+    @Override
+    public void deleteByConfigId(Long id) {
+        baseMapper.delete(new LambdaQueryWrapper<ThreadPoolConfigSnapshot>()
+                .eq(ThreadPoolConfigSnapshot::getConfigId, id));
+    }
+
+    @Override
+    public Set<ThreadPoolConfigSnapshot> queryByConfigId(Long poolConfigId) {
+        return new HashSet<>(lambdaQuery().eq(ThreadPoolConfigSnapshot::getConfigId, poolConfigId)
+                .list());
     }
 }

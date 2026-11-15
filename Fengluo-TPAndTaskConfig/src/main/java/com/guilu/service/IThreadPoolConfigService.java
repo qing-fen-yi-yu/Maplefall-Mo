@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 /**
  * <p>
@@ -23,4 +24,10 @@ public interface IThreadPoolConfigService extends IService<ThreadPoolConfig> {
     Page<ThreadPoolConfig> pageQuery(TPConfigPageQueryDto queryDto);
 
     void addTP(ThreadPoolConfig threadPoolConfig);
+
+    void updateTP(ThreadPoolConfig threadPoolConfig);
+
+    void deleteByIdWithSnapshot(Long id, Boolean withSnapshot) throws ExecutionException, InterruptedException;
+
+    void enable(Long id) throws ExecutionException, InterruptedException;
 }

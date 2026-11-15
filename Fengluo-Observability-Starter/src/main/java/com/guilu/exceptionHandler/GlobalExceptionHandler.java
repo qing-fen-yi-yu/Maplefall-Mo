@@ -35,6 +35,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(GlobalException.class)
     public ResponseEntity<ProblemDetail> handleGlobal(GlobalException e) {
+        log.error("业务异常",e);
         registryHandler(e);
         HttpStatusCode status = statusOf(e);
         return ResponseEntity.status(status)
@@ -43,6 +44,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleException(Exception e) {
+        log.error("其他异常",e);
         String message = e.getMessage();
         registryHandler(e);
         HttpStatusCode status = statusOf(e);

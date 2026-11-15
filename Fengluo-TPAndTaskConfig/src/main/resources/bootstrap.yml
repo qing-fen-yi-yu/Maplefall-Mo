@@ -58,3 +58,12 @@ fl:
   auth:
     resource:
       enable: false
+monitor:
+  threadpool:
+    dynamic:
+      enabled: true
+web:
+  dispatch:
+    instance:
+      scan:
+        enabled: true
