@@ -25,8 +25,16 @@ public class TaskDefinitionServiceImpl extends ServiceImpl<TaskDefinitionMapper,
     private final ITaskGroupRelationService relationService;
     private final ITaskGroupService taskGroupService;
 
+    //todo 任务具体逻辑实现
     @Override
     public void addTaskDefinition(TaskDefinition taskDefinition) {
+    }
+
+    @Override
+    public String runTask(Long id) {
+
+        //返回任务的执行信息
+        return "";
     }
 
     @Override

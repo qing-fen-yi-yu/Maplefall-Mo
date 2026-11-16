@@ -14,4 +14,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface ITaskDefinitionService extends IService<TaskDefinition> {
 
     void addTaskDefinition(TaskDefinition taskDefinition);
+
+    String runTask(Long id);
 }

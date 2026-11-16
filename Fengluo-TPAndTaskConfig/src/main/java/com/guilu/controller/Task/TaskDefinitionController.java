@@ -39,4 +39,9 @@ public class TaskDefinitionController {
         taskDefinitionService.removeById(id);
         return Result.success();
     }
+    @ApiOperation("根据任务Id执行任务")
+    @PostMapping("run/task/{id}")
+    public Result<String> runTask(@PathVariable Long id){
+        return Result.success(taskDefinitionService.runTask(id));
+    }
 }
