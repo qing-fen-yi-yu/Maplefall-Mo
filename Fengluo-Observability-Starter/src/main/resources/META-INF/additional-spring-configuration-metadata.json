@@ -10,6 +10,9 @@
     },
     {
       "name": "web.dispatch"
+    },
+    {
+      "name": "task.dipatch"
     }
   ],
   "properties": [
@@ -108,6 +111,17 @@
       "type": "java.lang.Boolean",
       "description": "是否开启实例扫描",
       "defaultValue": false
+    },
+    {
+      "name": "task.dispatch.enabled",
+      "type": "java.lang.Boolean",
+      "defaultValue": true
+    },
+    {
+      "name": "task.dispatch.type",
+      "type": "java.util.List<com.guilu.enums.TaskDispatchType>",
+      "description": "可获取的任务信息",
+      "defaultValue": "MFTASK"
     }
   ]
 }

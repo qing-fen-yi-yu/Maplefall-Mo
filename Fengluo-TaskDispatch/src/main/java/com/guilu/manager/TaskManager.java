@@ -1,39 +1,48 @@
 package com.guilu.manager;
 
-import com.guilu.domain.MFTask;
-import com.guilu.domain.ScheduledTask;
+import com.guilu.domain.DispatchMFTask;
+import com.guilu.domain.DispatchScheduledTask;
 import com.guilu.domain.Task;
-import lombok.Getter;
+import com.guilu.utils.RandomUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.config.ScheduledTask;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Slf4j
-@Getter
+@RequiredArgsConstructor
 public class TaskManager {
+    private static final AtomicLong TASKID = new AtomicLong(System.currentTimeMillis()%100000);
     //spring调度任务配置
-    private static final Map<String, ScheduledTask> scheduleTasks = new ConcurrentHashMap<>();
+    private static final Map<String, DispatchScheduledTask> scheduleTasks = new ConcurrentHashMap<>();
     //自定义任务配置
-    private static final Map<String, MFTask> mfTasks = new ConcurrentHashMap<>();
+    private static final Map<String, DispatchMFTask> mfTasks = new ConcurrentHashMap<>();
 
-    public static MFTask getMFTaskByName(String name){
+    public DispatchMFTask getMFTaskByName(String name){
         return mfTasks.get(name);
     }
 
-    public static ScheduledTask getScheduledTaskByName(String name){
+    public DispatchScheduledTask getScheduledTaskByName(String name){
         return scheduleTasks.get(name);
+    }
+    public static long getTaskID(){
+        return TASKID.getAndIncrement();
     }
 
     public boolean toRegistry(Task task){
         try {
-            if(task instanceof MFTask mfTask){
-                MFTask task1 = mfTasks.putIfAbsent(task.getTaskId(), mfTask);
+            if(task instanceof DispatchMFTask dispatchMfTask){
+                DispatchMFTask task1 = mfTasks.putIfAbsent(task.getTaskId(), dispatchMfTask);
                 return task1 != null;
-            } else if(task instanceof ScheduledTask scheduledTask){
-                ScheduledTask scheduledTask1 = scheduleTasks.putIfAbsent(task.getTaskId(), scheduledTask);
-                return scheduledTask1 != null;
+            } else if(task instanceof DispatchScheduledTask dispatchScheduledTask){
+                DispatchScheduledTask dispatchScheduledTask1 = scheduleTasks.putIfAbsent(task.getTaskId(), dispatchScheduledTask);
+                return dispatchScheduledTask1 != null;
             }
+            System.err.println("注册任务"+task.getTaskId());
         } catch (Exception e){
             log.error("注册任务失败",e);
             return false;
@@ -44,8 +53,8 @@ public class TaskManager {
 
     public boolean removeScheduledTaskByName(String taskId){
         try {
-            ScheduledTask remove = scheduleTasks.remove(taskId);
-            org.springframework.scheduling.config.ScheduledTask task = remove.getTask();
+            DispatchScheduledTask remove = scheduleTasks.remove(taskId);
+            ScheduledTask task = remove.getTask();
             task.cancel();//取消任务
             return true;
         } catch (Exception e){
@@ -65,17 +74,17 @@ public class TaskManager {
     }
 
     public boolean updateTask(Task task){
-        if(task instanceof MFTask mfTask){
-            return updateMFTask(mfTask);
-        } else if(task instanceof ScheduledTask scheduledTask){
-            return updateScheduledTask(scheduledTask);
+        if(task instanceof DispatchMFTask dispatchMfTask){
+            return updateMFTask(dispatchMfTask);
+        } else if(task instanceof DispatchScheduledTask dispatchScheduledTask){
+            return updateScheduledTask(dispatchScheduledTask);
         }
         return false;
     }
-    private boolean updateMFTask(MFTask mfTask){
+    private boolean updateMFTask(DispatchMFTask dispatchMfTask){
         return true;
     }
-    private  boolean updateScheduledTask(ScheduledTask scheduledTask){
+    private  boolean updateScheduledTask(DispatchScheduledTask dispatchScheduledTask){
         return true;
     }
 }

@@ -10,13 +10,13 @@ import java.util.concurrent.ScheduledFuture;
 
 @Getter
 @Setter
-public class MFTask extends Task  implements Runnable{
+public class DispatchMFTask extends Task  implements Runnable{
     private final Class<?> clazz;
     private final Method method;
     private final List<Parameter> params;
     @Nullable
     private volatile ScheduledFuture<?> future;
-    public MFTask(Class<?> clazz, Method method,String taskId,List<Parameter> params) {
+    public DispatchMFTask(Class<?> clazz, Method method, String taskId, List<Parameter> params) {
         super(taskId);
         this.clazz = clazz;
         this.method = method;
@@ -26,5 +26,15 @@ public class MFTask extends Task  implements Runnable{
     @Override
     public void run() {
         //todo
+    }
+
+    @Override
+    public String toString() {
+        return "MFTask{" +
+                "clazz=" + clazz +
+                ", method=" + method +
+                ", params=" + params +
+                ", future=" + future +
+                '}';
     }
 }
