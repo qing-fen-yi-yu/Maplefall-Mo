@@ -82,8 +82,8 @@ public class PoolRegister extends PoolManager {
         if (pool == null || StringUtils.isBlank(poolName)) {
             return false;
         }
-        Executor prev = addRegistry(poolName,pool);
         if (pool instanceof DynamicPool dynamicPool) dynamicPool.setThreadPoolName(poolName);
+        Executor prev = addRegistry(poolName,pool);
         if (prev != null) {
             log.warn("线程池 {} 已存在，跳过注册", poolName);
             return prev == pool;

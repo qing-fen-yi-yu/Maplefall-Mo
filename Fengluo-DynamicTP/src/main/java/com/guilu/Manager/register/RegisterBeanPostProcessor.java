@@ -43,10 +43,13 @@ public class RegisterBeanPostProcessor implements BeanPostProcessor {
 
     @Override
     public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
+        if (beanName.startsWith("org.springframework")) return bean;
         if (!enabled) {
             return bean;
         }
         Class<?> beanClass = AopUtils.getTargetClass(bean);
+        if (beanClass.getName().startsWith("org.springframework")) return bean;
+        if (beanClass.getName().startsWith("java.") || beanClass.getName().startsWith("javax.")) return bean;
         List<RegisPoolDto> waitsRegisTP = new ArrayList<>();
         // 避免扫描线程池实现类的内部字段和方法
         if (isPool(bean)) {
