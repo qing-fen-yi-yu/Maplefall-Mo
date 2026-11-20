@@ -2,7 +2,7 @@
 
 **面向 Spring Boot 服务的动态线程池管理与可观测性项目。**
 
-枫落围绕业务线程池的注册、运行状态查看和参数调整，逐步建设配置管理、异常观测与运维管理能力。当前开发重点是把单 JVM 内的线程池管理做完整，再接入配置中心和多实例管理。
+枫落围绕业务线程池的注册、运行状态查看和参数调整，提供 JVM 内动态线程池管理、Micrometer 可观测性及任务调度基础能力，并逐步建设配置管理与运维管理能力。远程配置闭环和多实例调度仍未完成。
 
 > 项目处于开发阶段。目前可以尝试本地线程池注册、查询与动态调参；远程配置下发、实例生效反馈和完整管理平台尚未完成。模块目录的存在不代表相应功能已交付。
 
@@ -33,7 +33,7 @@
 - **队列容量调整**：自定义队列支持扩缩容，缩容保留已有任务。
 - **生命周期管理**：清理已终止线程池的注册记录，并在容器关闭时执行关闭与等待。
 
-在此基础上，项目计划提供“配置发布 → 实例应用 → 结果反馈 → 状态查询”的管理流程。任务调度、通知与搜索是平台扩展方向。
+在此基础上，项目计划提供“配置发布 → 实例应用 → 结果反馈 → 状态查询”的管理流程。任务调度已有本地执行模块，通知投递与集中搜索仍属于平台扩展方向。
 
 ## 当前能力与进度
 
@@ -46,61 +46,67 @@
 | 账号与权限 | 已有用户、角色、菜单、用户角色关系及 JWT/Redis 认证授权代码       |
 | 网关 | 已有请求标识透传、路径检查和鉴权，当前用户服务路由为 `/maple/**`    |
 | 配置管理 | 已有线程池配置与快照的数据模型、Mapper 和基础服务代码，尚未完成远程应用流程 |
-| 任务调度 | 已有任务定义、执行记录、分组与关联的数据模型及基础代码，调度执行链路待建设     |
+| 任务调度 | `Fengluo-TaskDispatch` 提供本地任务注册与执行；`@MFTask` 由 Quartz 调度，`@Scheduled` 使用 Spring `TaskScheduler`；调度中心和分布式协调未实现 |
 | 搜索 | 已有 Elasticsearch 客户端配置；索引初始化 Runner 为空，业务检索待实现 |
 | 监控中心与通知 | 模块已规划，集中管理与通知流程待建设                        |
 
-上表描述已有代码，整体验收状态见文末。配置和任务控制器目前只有类级路径，没有业务方法；Quartz 示例位于测试目录。API 资产发现、行为基线、安全研判、防护回执与审计中心属于开发文档中的目标设计。
+上表描述已有代码，整体验收状态见文末。线程池配置服务及任务管理 API 尚未形成完整的远程管理闭环；Quartz 在运行代码中用于 `@MFTask`，但尚未实现类似 XXL-JOB 的调度中心、分片、集群协调和运维界面。API 资产发现、行为基线、安全研判、防护回执与审计中心属于目标设计。
 
 ## 项目结构
 
 ```text
 FengLuo/
-├── Fengluo_DynamicTP/              # 动态线程池、注册管理与调参实现
-├── Fengluo-Observability-Starter/   # 异常处理、Actuator/Prometheus、监控自动配置
-├── Fengluo-Config/                 # 线程池配置与配置快照管理
-├── Fengluo-Monitor/                # 监控模块集合
-│   ├── Fengluo-Monitor-SDK/        # Micrometer MeterBinder、GC 订阅与线程池定时采集
-│   └── Fengluo-Monitor-Service/    # 本地 MXBean / OSHI 与 GC 通知采集工具
-├── Fengluo-Task/                   # 任务定义、分组与执行记录
-├── Fengluo-Event/                  # 本地 Spring 事件与发布器
-├── Fengluo-Notice/                 # 通知模块，待建设
-├── Fengluo-Search/                 # Elasticsearch 搜索服务基础
-├── Fengluo-User/                   # 账号、用户、角色与菜单
-├── Fengluo-Auth/auth-service/      # 共享认证授权组件
-├── Geteway/                       # 网关，沿用当前目录拼写
-├── FengLuo-Api/                   # 服务间调用基础依赖
-├── Fengluo-Common/                # 统一响应、异常与公共工具
-├── sql/                           # 本地数据库脚本，当前被 Git 忽略
-├── doc/                           # 本地设计与代码解读，当前被 Git 忽略
-├── README.md                      # 项目入口、接入说明与验证状态
-└── pom.xml                        # Maven 聚合构建与版本管理
+├── Fengluo-Common/                 # 公共响应、异常和工具
+├── Fengluo-Event/                  # 线程池配置/拒绝事件及 Spring 事件发布
+├── Fengluo-DynamicTP/              # 线程池注册、查询、原地调参、快照和生命周期
+├── Fengluo-TaskDispatch/           # @MFTask + Quartz、@Scheduled + TaskScheduler
+├── Fengluo-Monitor/
+│   ├── Fengluo-Monitor-Service/    # MXBean、GC 通知与 OSHI 系统采集
+│   └── Fengluo-Monitor-SDK/        # Micrometer Binder 与线程池指标采集
+├── Fengluo-Observability-Starter/  # 自动配置、Quartz 接入、动态线程池和观测 Starter
+├── Fengluo-Api/                    # 服务间调用基础类型
+├── Fengluo-Auth/auth-service/      # JWT、令牌存储、认证与权限基础设施
+├── Fengluo-User/                   # 用户、角色、菜单与登录业务
+├── Geteway/                        # 网关（仓库目录拼写）
+├── Fengluo-TPAndTaskConfig/        # 线程池/任务配置管理服务的启动模块
+├── Fengluo-Search/                 # Elasticsearch 接入基础
+├── Fengluo-Notice/                 # 通知模块骨架
+├── sql/                            # 本地数据库脚本
+├── doc/                            # 设计与开发文档
+├── README.md                       # 项目说明与接入指南
+└── pom.xml                         # Maven Reactor、依赖版本和 Java 17 配置
 ```
 
-### 本地观测链路
+### 当前架构与设计方案
 
-```mermaid
-flowchart LR
-    Pool[业务线程池] --> Register[注解扫描与本地注册表]
-    Register --> Update[PoolUpdater 原地调参]
-    Register --> Reporter[PoolReporter 快照]
-    Reporter --> Adapter[Starter SPI 适配]
-    Adapter --> Binder[SDK 线程池指标]
-    JVM[MXBean 与 OSHI] --> Metrics[SDK JVM 与 GC 指标]
-    Logs[Logback Appender] --> LogMetrics[日志队列指标]
-    Binder --> Registry[MeterRegistry]
-    Metrics --> Registry
-    LogMetrics --> Registry
-    Registry --> Endpoint[业务应用 Actuator]
+项目按 Maven 模块分层。底层公共模块提供通用类型和事件；动态线程池、任务调度、监控采集作为能力模块；Observability Starter 组合这些能力并通过 Spring Boot 自动配置接入业务服务；User、Gateway 和 TP/Task Config 是面向业务或管理入口的应用模块。
+
+**线程池数据流**：业务 Bean 通过 `@DynamicThreadPool` 注册到 `Fengluo-DynamicTP` 的进程内注册表；`PoolUpdater` 修改已注册执行器，`PoolReporter` 生成快照。Starter 将 Reporter 适配为 SDK 的 `ThreadPoolSnapshotSource`，由 Micrometer Binder 定时更新指标，最终通过业务应用的 Actuator 暴露。当前注册表使用 JVM 级静态状态，配置更新事件是进程内 Spring 事件，不代表已实现跨实例同步。
+
+**任务执行流**：`TaskDispatchConfig` 根据 `task.dispatch.enabled` 与 `task.dispatch.type` 创建注册器。`MFTASK` 扫描 `@MFTask` 并用 Quartz 注册 Job/Trigger，Quartz Job 根据任务 ID 从 `TaskManager` 找到 Spring Bean 调用入口；`SPRINGSCHEDULED` 扫描 `@Scheduled` 并由 Spring `TaskScheduler` 执行。`TaskManager` 的任务映射是应用内存状态。Quartz 持久化模式取决于宿主 Quartz 配置；本项目没有提供中心化任务管理、分布式调度协议或 XXL-JOB 式控制台。
+
+**观测数据流**：Monitor-Service 从 JVM MXBean、GC 通知和 OSHI 获取数据；Monitor-SDK 将 JVM、GC 和线程池快照绑定为 Micrometer 指标；Starter 按开关装配 Binder，并复用 Spring Boot Actuator/Prometheus 暴露端点。该链路是应用本地采集与暴露，不包含集中式时序存储或告警平台。
+
+任务调度配置示例（Quartz cron 使用 Quartz 表达式格式）：
+
+```yaml
+task:
+  dispatch:
+    enabled: true
+    type:
+      - mftask
+      - springscheduled
 ```
 
-图示为已编码组件的关系。配置更新事件目前通过进程内 Spring 事件传递，远程发布、版本与实例回执尚未闭环；Prometheus 抓取目标也需要另行配置。
+`type` 缺省为 `MFTASK`。`@MFTask` 支持 Quartz cron、具名 `Scheduler`、具名 Quartz `Trigger` 和 misfire 策略；`@Scheduled` 使用具名或默认 `TaskScheduler`。如配置只启用 `mftask`，Starter 不会创建默认 Spring `TaskScheduler`。
+
+注意：应用若同时启用了 Spring 的 `@EnableScheduling`，Spring 原生调度器也会处理 `@Scheduled` 方法，而本模块的 `SPRINGSCHEDULED` 注册器会再次注册它们，可能导致同一任务重复执行。当前 `Fengluo-TPAndTaskConfig` 启动类启用了 `@EnableScheduling`；启用本模块的 `SPRINGSCHEDULED` 前，应避免两套注册机制同时生效。
 
 ## 快速体验动态线程池
 
 ### 1. 环境与构建
 
-准备 JDK 17、Maven 3.x，通过 `java -version` 与 `mvn -version` 确认 Maven 使用 JDK 17。先解决文末列出的构建问题，再在仓库根目录安装 Starter 及其依赖：
+准备 JDK 17、Maven 3.x，通过 `java -version` 与 `mvn -version` 确认 Maven 使用 JDK 17。构建与验证状态见文末；在仓库根目录安装 Starter 及其依赖：
 
 ```shell
 mvn -pl Fengluo-Observability-Starter -am install
@@ -134,20 +140,19 @@ monitor:
 在业务配置类中声明：
 
 ```java
-import com.guilu.annotation.DynamicThreadPool;
-import com.guilu.DynamicThreadPool.FLBlockingQueue.CapacityBlockingQueue;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import java.util.concurrent.*;
+import java.util.concurrent.Executors;
 
-@Configuration(proxyBeanMethods = false)
+@Configuration
 public class BusinessPoolConfiguration {
+    @DynamicThreadPool(name = "dynamicTP1")
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+
     @Bean("dynamicTP2")
     @DynamicThreadPool(name = "dynamicTP2")
     public ExecutorService createTP2() {
         return Executors.newFixedThreadPool(2);
     }
-    
+
     @Bean("dynamicTP3")
     @DynamicThreadPool(name = "dynamicTP3")
     public ThreadPoolExecutor createTP3() {
@@ -260,7 +265,7 @@ management:
 
 ### 自动配置与 Bean 归属
 
-OB 模块通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 加载以下七个正式入口。业务应用引入 Starter 后无需扫描其配置包或手动导入配置类。
+OB 模块通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports` 加载以下八个正式入口。业务应用引入 Starter 后无需扫描其配置包或手动导入配置类。
 
 | 自动配置类（`com.guilu.config` 包） | 注册职责 | 条件与顺序 |
 | --- | --- | --- |
@@ -271,6 +276,7 @@ OB 模块通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConf
 | `JvmExtrasAutoConfiguration` | ProcessMemoryMetrics、ProcessThreadMetrics、缺失时的 JvmInfoMetrics | 在 Boot 的 JVM 配置之后加载，受 `monitor.jvm.extras.enabled` 控制 |
 | `GlobalExceptionAutoConfiguration` | GlobalExceptionHandler 和条件化的 GlobalExceptionAspect | 在 Registry 与 AOP 配置之后加载；需要 Servlet 环境及 MeterRegistry，切面另需 AOP 自动代理器且 `spring.aop.auto` 未关闭 |
 | `ObservabilityAutoConfiguration` | 启动横幅 ApplicationRunner | 受 `monitor.banner.enabled` 控制，从 classpath 读取资源 |
+| `TaskDispatchConfig` | TaskManager、Quartz `MFTaskRegister`、Spring `ScheduledTaskRegister` 与调度器上下文适配 | `task.dispatch.enabled` 总开关；`task.dispatch.type` 选择 `MFTASK`、`SPRINGSCHEDULED` 或两者；Quartz 自动配置优先 |
 
 多数功能 Bean 使用 `@ConditionalOnMissingBean`，应用提供对应类型 Bean 时默认注册退让；日志配置中的 ExpandAppender Bean 没有该退让条件。线程池管理配置保留 `ThreadPoolUpdater`、`ThreadPoolInquirer`、`ThreadPoolReporter` 等既有 Bean 别名。
 
@@ -302,17 +308,11 @@ OB 模块通过 `META-INF/spring/org.springframework.boot.autoconfigure.AutoConf
 
 ### 手动使用 Monitor-SDK
 
-JvmSupplementMetrics、GcMetricsBinder 当前包声明为 `com.guilu.monitor.sdk`，ThreadPoolMetricsBinder 位于 `.sdk.binder`；Starter 导入不一致尚需统一。以下导入按当前 SDK 声明编写，包结构修复后需同步核对。
+JvmSupplementMetrics、GcMetricsBinder 当前包声明为 `com.guilu.monitor.sdk`，ThreadPoolMetricsBinder 位于 `.sdk.binder`。以下导入对应当前源码包名。
 
 手动接入使用 `com.fengluo:Fengluo-Monitor-SDK:1.0-SNAPSHOT`，由应用提供 Registry 与 ThreadPoolSnapshotSource。以下为业务方法内片段：
 
 ```java
-import com.guilu.monitor.sdk.JvmSupplementMetrics;
-import com.guilu.monitor.sdk.GcMetricsBinder;
-import com.guilu.monitor.sdk.binder.ThreadPoolMetricsBinder;
-import com.guilu.monitor.sdk.spi.ThreadPoolSnapshotSource;
-import java.time.Duration;
-
 // registry 为现有 MeterRegistry；source 为应用实现的 ThreadPoolSnapshotSource。
 new JvmSupplementMetrics().bindTo(registry);
 GcMetricsBinder gc = new GcMetricsBinder();
@@ -335,7 +335,7 @@ pools.bindTo(registry);
 
 `total.offered` 记录直接 offer 成功次数，`total.evicted` 记录淘汰替换路径，不能将后者直接解释为新日志写入失败。日志 Binder 的 `close()` 目前为空；内存快照不提供集中存储、检索接口或异常堆栈。详细指标见[日志说明](Fengluo-Monitor/Fengluo-Monitor-SDK/doc/日志记录以及指标器.md)。
 
-## 构建与验证记录
+## 构建与验证
 
 ```shell
 mvn -pl Fengluo-Observability-Starter -am clean compile
@@ -343,17 +343,11 @@ mvn -pl Fengluo-Observability-Starter -am test
 mvn -pl Geteway,Fengluo-User -am compile
 ```
 
-| 检查 | 实际结果 |
-| --- | --- |
-| Starter 及依赖模块测试 | 未通过。Monitor-Service 的 MetricsTest 运行 6 项，1 项 error；Windows OSHI/JNA 抛 `Invalid memory access`，后续模块跳过 |
-| Starter 及依赖模块增量编译 | 通过，但后续干净编译失败，不能作为完整构建通过的证据 |
-| Starter 及依赖模块 `clean compile` | 未通过。MonitorMetricsAutoConfiguration 的 JVM/GC Binder 引用产生 5 处 `cannot find symbol`，前序模块编译成功 |
+本次 README 更新核对了 Maven 模块、自动配置清单、任务调度实现和关键配置；没有运行 Maven 构建或测试。当前执行环境没有 `mvn` 命令，TaskDispatch 最近的 Quartz 接线需要在配置好 JDK 17/Maven 的环境重新验证。
 
-**当前构建问题**：`binder/JvmSupplementMetrics.java` 与 `binder/GcMetricsBinder.java` 声明为 `com.guilu.monitor.sdk`，Starter 及部分测试导入 `.sdk.binder`。需要统一包声明与调用方引用，再进行干净构建。
+此前工作区曾记录 Windows 下 OSHI/JNA 测试出现 `Invalid memory access`，以及 Monitor-Service 系统指标依赖原生初始化的问题；这属于历史验证结果，本次未复测。当前源码中的 `JvmSupplementMetrics`、`GcMetricsBinder` 包声明与 Starter 导入已对齐，旧记录中关于这两个类包名不一致的编译错误不再作为当前源码状态。
 
-**当前采集问题**：SystemMetrics 的静态字段会创建 OSHI 明细采集器，因此 `sys-detail-info=false` 不能保证完全绕过原生初始化。已观察到的原生 `java.lang.Error` 未被构造器现有降级分支处理；需调查版本、权限与平台因素，并验证基础采集不受明细失败影响。
-
-现有测试包含线程池注册与更新相关组件、快照、拒绝策略、生命周期、SPI、缓存、指标 Binder 与自动配置。仍需验证实际端点抓取、动态发现、指标移除、关闭清理及多实例行为。未启动外部基础设施或完成跨服务端到端验收。
+建议后续执行上方的干净编译、测试及 `Geteway`/`Fengluo-User` 编译，并在可运行环境检查 Actuator 抓取、Quartz Job 注册/取消、`@Scheduled` 是否重复执行、关闭清理和外部基础设施联调。现阶段不把这些描述为已验收结果。
 
 ## 启动业务服务
 
@@ -386,13 +380,13 @@ server:
 
 ## 当前限制与后续方向
 
-- 注册表使用 JVM 级静态状态，尚不支持多个独立 ApplicationContext 隔离。
+- DynamicTP 的线程池注册表仍使用 JVM 级静态状态；TaskDispatch 的任务映射则是 `TaskManager` 实例级内存状态。
 - Spring 接入和核心实现仍在同一模块，后续计划拆分 Core 与 Starter。
 - 已注册线程池会参与模块的关闭管理，外部共享线程池应明确生命周期所有权。
 - ThreadPoolTaskExecutor 适配的是底层线程池；外层包装器配置字段不随底层修改自动同步。
 - 本地调参不代表跨实例同步；Nacos 下发、配置版本、实例应用结果与失败补偿待实现。
 - DynamicTP 自带自动配置清单仍引用 Starter 中的类，单独引入 DynamicTP 的装配边界需进一步梳理。
 - 异常指标使用异常消息作标签，存在标签基数增长风险；SDK 两份 MetricNames 也需要收敛维护。
-- 任务调度引擎集成、通知投递、集中监控和业务日志检索仍需继续建设。
+- Quartz 是当前 `MFTASK` 的执行引擎；中心化任务管理 API、集群协调/分片与 XXL-JOB 式控制台仍需建设。通知投递、集中监控和业务日志检索也尚未形成完整链路。
 
 当前 `.gitignore` 忽略 `doc/`、`test/` 与 SQL 文件，相关本地文档、测试源码和数据库脚本可能不包含在克隆结果中，也可能不出现在普通 `git diff` 中。上述链接面向完整本地工作区；发布前需确认纳入版本管理的范围。`history` 保留历史版本，目标设计与旧构建结论应结合当前源码重新核对。
