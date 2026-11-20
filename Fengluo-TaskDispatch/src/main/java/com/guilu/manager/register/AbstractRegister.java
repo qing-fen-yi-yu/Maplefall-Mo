@@ -1,17 +1,15 @@
 package com.guilu.manager.register;
 import com.guilu.annotation.MFTask;
 import com.guilu.manager.TaskManager;
-import com.guilu.utils.ObjectUtils;
 import org.springframework.aop.support.AopUtils;
+import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.scheduling.annotation.Scheduled;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public abstract class AbstractRegister extends TaskManager {
-    public abstract boolean register(Object anno, Method method,Class<?> beanClass,String name);
+public abstract class AbstractRegister {
+    public abstract boolean register(String beanName,Object anno, Method method,Class<?> beanClass,String name);
     protected String getTaskId(Object taskAnno,Method method){
         if(taskAnno instanceof MFTask mfTaskAnno){
             String name = mfTaskAnno.name();
@@ -54,8 +52,8 @@ public abstract class AbstractRegister extends TaskManager {
         return bean.getMethods();
     }
     private boolean validMethod(Method method) {
-        boolean hasMFTask    = method.isAnnotationPresent(MFTask.class);
-        boolean hasScheduled = method.isAnnotationPresent(Scheduled.class);
+        boolean hasMFTask = AnnotatedElementUtils.hasAnnotation(method, MFTask.class);
+        boolean hasScheduled = AnnotatedElementUtils.hasAnnotation(method, Scheduled.class);
         return hasMFTask ^ hasScheduled;
     }
 }

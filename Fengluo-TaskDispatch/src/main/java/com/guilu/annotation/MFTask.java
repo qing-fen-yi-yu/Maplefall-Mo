@@ -15,7 +15,12 @@ public @interface MFTask {
     String value() default "";
     @AliasFor("value")
     String name() default "";
+    // cron表达式
+    String cron() default "";
+    //执行器Bean
     String scheduler() default "";
-    //任务错过执行的策略-默认立即执行
+    // Quartz misfire policy used by the cron trigger.
     MisFireHandlingType mistype() default MisFireHandlingType.MISFIRE_INSTRUCTION_FIRE_NOW;
+    // Optional bean name of an org.quartz.Trigger.
+    String trigger() default "";
 }

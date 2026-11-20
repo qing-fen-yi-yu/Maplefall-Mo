@@ -12,7 +12,9 @@
       "name": "web.dispatch"
     },
     {
-      "name": "task.dipatch"
+      "name": "task.dispatch",
+      "type": "com.guilu.properties.TaskDispatchProperties",
+      "sourceType": "com.guilu.properties.TaskDispatchProperties"
     }
   ],
   "properties": [
@@ -115,13 +117,14 @@
     {
       "name": "task.dispatch.enabled",
       "type": "java.lang.Boolean",
+      "description": "是否启用任务注册与调度。",
       "defaultValue": true
     },
     {
       "name": "task.dispatch.type",
       "type": "java.util.List<com.guilu.enums.TaskDispatchType>",
-      "description": "可获取的任务信息",
-      "defaultValue": "MFTASK"
+      "description": "启用的任务注册方式，可配置 MFTASK、SPRINGSCHEDULED 或两者。",
+      "defaultValue": ["MFTASK"]
     }
   ]
 }
